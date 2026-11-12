@@ -20,6 +20,11 @@ rules:
   API-02: warn      # error payload returned with a 2xx status
   API-06: warn      # OpenAPI document no longer matches the routes
   API-07: error     # the same route declared twice — one can never run
+  # --- security domain. Silence is the correct output for a repo that keeps its
+  # credentials out of the tree; these fire on evidence, not on suspicion.
+  SEC-01: error     # credentials in a file git could ship
+  SEC-02: error     # credential hardcoded in source
+  SEC-03: warn      # .env.example no longer documents what .env needs
 exceptions: []
 boolean_allowlist:
   - is_active

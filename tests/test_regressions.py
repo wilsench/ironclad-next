@@ -27,6 +27,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import re
 import tempfile
 from pathlib import Path
 
@@ -142,12 +143,18 @@ def test_repo_preset_layers_with_flag():
         (d / ".agent" / "standards.yml").write_text(
             "name: balanced\nexceptions:\n  - skip.sql\n  - keep.sql\n")
         r = check([".", ], cwd=d)
-        # Assert the behaviour, not the wording: nothing is left to check, so the
-        # run must refuse to look clean. It used to grep for "no .sql", which
-        # broke the day the message learned to name every domain's extensions.
-        if r.returncode != 2 or ".sql" not in r.stderr:
+        # Both entries honoured means neither file is looked at, so the run must
+        # refuse to look clean. This was briefly relaxed while `.agent/standards.yml`
+        # was itself being scanned as application source; the fix belonged in the
+        # security domain, not in this assertion.
+        leaked = [ln for ln in r.stdout.splitlines()
+                  if re.search(r"\b(skip|keep)\.sql:", ln)]
+        if leaked:
             bad("multi-entry exceptions are all honoured",
-                f"expected exit 2 with nothing checked, got exit {r.returncode}:\n"
+                f"excepted files were still reported:\n{leaked[:3]}")
+        elif r.returncode != 2:
+            bad("multi-entry exceptions are all honoured",
+                f"expected exit 2 with nothing left to check, got {r.returncode}:\n"
                 f"{r.stdout}{r.stderr}")
         else:
             ok("multi-entry exceptions are all honoured")

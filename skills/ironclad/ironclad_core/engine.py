@@ -11,8 +11,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import Finding, RuleMeta, is_silent
-from .discovery import find_unsupported, iter_files
+from .discovery import find_unsupported, iter_files, matches
 from .report import Result
+
+# Domains whose findings mean "a schema was inspected". Exit code 2 (nothing
+# checked) is a promise about schema coverage; a source-file rule has never been
+# part of it.
+SCHEMA_DOMAINS = ("database",)
 
 
 @dataclass
@@ -48,7 +53,7 @@ class Rule:
     extensions: tuple[str, ...] = ()
 
     def applies(self, ctx: FileContext) -> bool:
-        return not self.extensions or ctx.path.suffix in self.extensions
+        return not self.extensions or matches(ctx.path, self.extensions)
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
         raise NotImplementedError
@@ -68,7 +73,7 @@ class ProjectRule:
         none of them, but reading a 400-file repo to guess is wasteful and, worse,
         inflates `files_checked` with files no rule ever examined.
         """
-        return not self.extensions or ctx.path.suffix in self.extensions
+        return not self.extensions or matches(ctx.path, self.extensions)
 
     def check(self, contexts: list["FileContext"], cfg: dict) -> list[Finding]:
         raise NotImplementedError
@@ -134,23 +139,35 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
             continue
         contexts.append(FileContext(path=path, text=text, language=_language_of(path)))
 
-    # "Checked" means a rule actually looked, not that the file was opened.
-    # With several domains loaded, the union of extensions pulls in files no
-    # rule can judge (a Django models.py is readable and unreadable at once);
-    # counting those made a repo with nothing checked exit 0. That is the exact
-    # false pass this tool exists to prevent, so coverage is measured per rule.
+    # "Checked" means a schema rule actually looked, not that some rule opened the
+    # file. With several domains loaded, the union of extensions pulls in files no
+    # schema rule can judge — a Django `models.py` is read by the security domain
+    # (it is a source file) and by no database rule (it is not parseable schema).
+    # Counting it as checked made that repo exit 0: green exactly like a clean
+    # repo, which is the false pass this tool exists to prevent.
+    #
+    # Only the database domain counts toward schema coverage, because that is the
+    # promise the exit code has always made. When a domain can parse a new schema
+    # stack, it joins DATABASE_DOMAIN below.
     #
     # Keyed by index, not by id(): a dict keyed on `id(ctx)` does not keep the
     # object alive, CPython reuses the address after collection, and two files
-    # then share one key. That inflated the count by one per run on a one-file
-    # repo — found by asking why `1 file` printed `2`.
+    # then share one key. That inflated the count by one on a one-file repo —
+    # found by asking why `1 file` printed `2`.
+    # Every rule that applies runs; only schema-domain rules count toward the
+    # "did we check anything" promise that exit code 2 makes.
     applicable = {i: [r for r in registry.file_rules if r.applies(ctx)]
                   for i, ctx in enumerate(contexts)}
-    # A file counts as checked only if some rule would examine it, file-scoped or
-    # project-scoped. Otherwise a Django repo reports "1 file, 0 findings" — green
-    # exactly like a clean repo, which is the false pass this tool exists to stop.
-    inspected = {i for i, rules in applicable.items() if rules}
+    # A file counts as checked only if a *schema* rule would examine it, file-scoped
+    # or project-scoped. Otherwise a Django repo reports "1 file, 0 findings" —
+    # green exactly like a clean repo, which is the false pass this tool exists to
+    # stop. The security domain reading `models.py` is real work, just not the work
+    # the exit code promises.
+    inspected = {i for i, rules in applicable.items()
+                 if any(r.meta.domain in SCHEMA_DOMAINS for r in rules)}
     for rule in registry.project_rules:
+        if rule.meta.domain not in SCHEMA_DOMAINS:
+            continue
         if is_silent(_severity_of(rule.meta.id, cfg, rule.meta.default_severity)):
             continue
         for i, ctx in enumerate(contexts):
@@ -161,12 +178,15 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
     for i, ctx in enumerate(contexts):
         file_findings = []
         for rule in applicable[i]:
-            sev = _severity_of(rule.meta.id, cfg, rule.meta.default_severity)
-            if is_silent(sev):
+            configured = cfg.get("rules", {}).get(rule.meta.id)
+            if is_silent(configured if configured is not None else rule.meta.default_severity):
                 continue
             for finding in rule.check(ctx, cfg):
-                # The engine owns severity, not the rule: a repo's config must be
-                # able to demote a rule without the rule agreeing.
+                # Config wins when it says something; otherwise the rule keeps the
+                # severity it chose for this specific finding. SEC-01 needs that:
+                # the same rule is an error for a tracked file and a warning for an
+                # untracked one, and one config entry cannot express both.
+                sev = configured if configured is not None else finding.severity
                 file_findings.append(Finding(
                     rule=finding.rule,
                     severity=sev,
@@ -184,13 +204,13 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
         result.findings.extend(file_findings)
 
     for rule in registry.project_rules:
-        sev = _severity_of(rule.meta.id, cfg, rule.meta.default_severity)
-        if is_silent(sev):
+        configured = cfg.get("rules", {}).get(rule.meta.id)
+        if is_silent(configured if configured is not None else rule.meta.default_severity):
             continue
         for finding in rule.check(contexts, cfg):
             result.findings.append(Finding(
                 rule=finding.rule,
-                severity=sev,
+                severity=configured if configured is not None else finding.severity,
                 file=finding.file,
                 position=finding.position,
                 message=finding.message,

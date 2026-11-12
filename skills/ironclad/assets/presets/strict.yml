@@ -17,6 +17,9 @@ rules:
   API-02: error
   API-06: error
   API-07: error
+  SEC-01: error
+  SEC-02: error
+  SEC-03: error
 exceptions: []
 boolean_allowlist:
   - is_active

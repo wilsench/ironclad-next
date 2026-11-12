@@ -15,6 +15,18 @@ rules:
   DB-06: warn      # money as binary float is still wrong everywhere
   DB-07: warn
   DB-08: error     # the only rule that hard-fails: two styles for one concept
+
+  # Coherence extends past the schema: the same question, asked of endpoints.
+  # API-07 is an error here for the same reason DB-08 is — two identical strings
+  # is a fact, not a preference. Everything else stays a warning.
+  API-01: warn     # endpoints named two ways
+  API-02: warn     # error payload under a 2xx status
+  API-07: error    # the same route declared twice
+
+  # A leak is a leak regardless of house style: these are not opinions.
+  SEC-01: error
+  SEC-02: error
+  SEC-03: warn
 exceptions: []
 boolean_allowlist:
   - is_active

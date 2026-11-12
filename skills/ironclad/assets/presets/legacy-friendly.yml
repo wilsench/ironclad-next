@@ -17,6 +17,9 @@ rules:
   API-02: warn
   API-06: warn
   API-07: warn
+  SEC-01: warn
+  SEC-02: warn
+  SEC-03: warn
 exceptions: []
 boolean_allowlist:
   - is_active

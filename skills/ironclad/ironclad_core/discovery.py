@@ -48,14 +48,19 @@ def iter_files(paths, exceptions=(), extensions=None):
     if extensions is None:
         extensions = (".sql", ".php", ".prisma")
     wanted = {e if e.startswith(".") else f".{e}" for e in extensions}
+    # A dotfile has an empty suffix: `Path(".env").suffix == ""`, so it can never
+    # match `.env` in an extension set. Every claim is also tried as a whole file
+    # name. Dotted families count too: claiming ".env" must also claim
+    # ".env.example", or the one file a repo is supposed to ship is invisible.
+    names = set(extensions)
     exc = [e.rstrip("/") for e in exceptions]
     for p in paths:
         p = Path(p)
-        if p.is_file() and p.suffix in wanted:
+        if p.is_file() and (p.suffix in wanted or matches(p, names)):
             yield p
         elif p.is_dir():
             for f in p.rglob("*"):
-                if f.suffix not in wanted:
+                if f.suffix not in wanted and not matches(f, names):
                     continue
                 if set(f.parts) & SKIP_DIRS:
                     continue
@@ -80,6 +85,20 @@ def _is_nested_dependency(root: Path, candidate: Path) -> bool:
     except ValueError:
         return False
     return bool(set(rel.parts[:-1]) & SKIP_DIRS)
+
+
+def matches(path: Path, extensions) -> bool:
+    """Does this domain claim this file?
+
+    Three ways to be claimed: the suffix, the exact name, or membership in a
+    dotted name family. The third is what makes ".env" cover ".env.example" and
+    ".env.production" — `Path(".env.example").suffix` is ".example", so the
+    suffix test alone silently lost the one file a repo is meant to commit.
+    """
+    exts = tuple(extensions or ())
+    if path.suffix in exts or path.name in exts:
+        return True
+    return any(path.name.startswith(f"{e}.") for e in exts if e.startswith("."))
 
 
 def find_unsupported(paths) -> dict:
