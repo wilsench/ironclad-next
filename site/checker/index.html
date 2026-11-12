@@ -124,6 +124,14 @@
 </tr>
 </tbody>
 </table></div>
+<p>Urutan prioritas, dari paling lemah ke paling kuat:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code>builtin:balanced  &lt;  .agent/standards.yml  &lt;  --preset  &lt;  --config
+</code></pre></div>
+<p>Berkas <code>.agent/standards.yml</code> <strong>selalu</strong> dibaca — <code>exceptions</code> dan
+<code>boolean_allowlist</code> milik repo tetap berlaku walaupun kamu memberi <code>--preset</code>.
+Yang ditimpa preset hanyalah tingkat keparahan per aturan. Sebuah berkas yang
+hanya berisi <code>name: coherence</code> (persis yang ditulis <code>ironclad preset</code>) dibaca
+sebagai preset tersebut, jadi keduanya sah: nama saja, atau aturan eksplisit.</p>
 <h2 id="exit-code">Exit code</h2>
 <div class="tablewrap"><table>
 <thead>

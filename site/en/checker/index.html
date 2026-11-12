@@ -116,8 +116,12 @@ python3 scripts/check_schema.py . --preset balanced
 <td><code>balanced</code>, <code>coherence</code>, <code>strict</code>, <code>legacy-friendly</code></td>
 </tr>
 <tr>
+<td><code>--config FILE</code></td>
+<td>explicit config file; outranks <code>--preset</code></td>
+</tr>
+<tr>
 <td><code>--strict</code></td>
-<td>shorthand for <code>--preset strict</code></td>
+<td>escalate all warns to errors — <strong>deprecated</strong>, use <code>--preset strict</code></td>
 </tr>
 <tr>
 <td><code>--json</code></td>
@@ -129,6 +133,14 @@ python3 scripts/check_schema.py . --preset balanced
 </tr>
 </tbody>
 </table></div>
+<p>Precedence, weakest to strongest:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>builtin:balanced  &lt;  .agent/standards.yml  &lt;  --preset  &lt;  --config
+</code></pre></div>
+<p><code>.agent/standards.yml</code> is <strong>always</strong> read — the repo's <code>exceptions</code> and
+<code>boolean_allowlist</code> still apply when you pass <code>--preset</code>. The preset only
+overrides per-rule severity. A file that contains nothing but <code>name: coherence</code>
+(exactly what <code>ironclad preset</code> writes) is read as that preset, so both forms
+are valid: a name alone, or explicit rules.</p>
 <p>Without <code>--preset</code>, the checker looks for <code>.agent/standards.yml</code> and walks up
 from the target directory. The report's last line tells you which one it used —
 <code>preset: balanced (.agent/standards.yml)</code> or <code>preset: strict (preset:strict)</code>.</p>
