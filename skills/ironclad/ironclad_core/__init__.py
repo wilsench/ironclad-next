@@ -64,6 +64,10 @@ class Finding:
     file: str
     position: Position = field(default_factory=Position)
     domain: str = "database"
+    # Set only by project-scoped rules, which report on one file but were driven by
+    # many. The engine uses it to tell "this file was examined" from "this file
+    # merely matched an extension".
+    applies: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "severity", normalise_severity(self.severity))

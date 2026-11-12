@@ -20,6 +20,11 @@ rules:
   SEC-01: error
   SEC-02: error
   SEC-03: error
+  # Architecture: a cycle is legal to write and always worth blocking before merge
+  # in a strict repo, because it makes module load order a matter of luck.
+  ARCH-01: error
+  ARCH-02: error
+
 exceptions: []
 boolean_allowlist:
   - is_active

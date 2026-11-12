@@ -16,6 +16,13 @@ from . import Finding
 class Result:
     findings: list[Finding] = field(default_factory=list)
     files_checked: int = 0
+    # Files a *schema* rule actually parsed. Separate from `files_checked` because
+    # the two answer different questions: "how much did this run look at" and "can
+    # this run promise anything about the database". A JS-only repo has a
+    # non-zero first number and a zero second one, and that is not a failure —
+    # whereas a Django repo with models.py needs the second number to decide
+    # whether to say "do not treat this as a pass".
+    schema_checked: int = 0
     preset: str = "balanced"
     source: str = "builtin:balanced"
     sources: list[str] = field(default_factory=lambda: ["builtin:balanced"])

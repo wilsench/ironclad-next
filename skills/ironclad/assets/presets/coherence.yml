@@ -27,6 +27,12 @@ rules:
   SEC-01: error
   SEC-02: error
   SEC-03: warn
+  # Architecture is not a style question — either the graph resolves or it does
+  # not. Both are reported; neither blocks, because `coherence` never blocks on
+  # anything except a concept stored two different ways.
+  ARCH-01: warn
+  ARCH-02: warn
+
 exceptions: []
 boolean_allowlist:
   - is_active

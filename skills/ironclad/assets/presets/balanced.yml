@@ -25,6 +25,12 @@ rules:
   SEC-01: error     # credentials in a file git could ship
   SEC-02: error     # credential hardcoded in source
   SEC-03: warn      # .env.example no longer documents what .env needs
+  # Architecture defaults: report, do not block. A cycle between two constant
+  # files is noise; a broken import is a build failure the bundler already
+  # catches, so this warns rather than duplicating the compiler.
+  ARCH-01: warn
+  ARCH-02: warn
+
 exceptions: []
 boolean_allowlist:
   - is_active

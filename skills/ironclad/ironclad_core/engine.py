@@ -156,6 +156,13 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
     # found by asking why `1 file` printed `2`.
     # Every rule that applies runs; only schema-domain rules count toward the
     # "did we check anything" promise that exit code 2 makes.
+    # Project rules may need to know which directory the graph is anchored on.
+    # Passed through the config rather than an extra argument, so every existing
+    # `check(ctxs, cfg)` signature stays valid and a domain that does not care
+    # cannot be broken by the addition.
+    cfg = dict(cfg)
+    cfg["_targets"] = [str(t) for t in targets]
+
     applicable = {i: [r for r in registry.file_rules if r.applies(ctx)]
                   for i, ctx in enumerate(contexts)}
     # A file counts as checked only if a *schema* rule would examine it, file-scoped
@@ -165,6 +172,10 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
     # the exit code promises.
     inspected = {i for i, rules in applicable.items()
                  if any(r.meta.domain in SCHEMA_DOMAINS for r in rules)}
+    # A domain that says "I read this file" widens the count only when no schema
+    # rule ran at all; the schema number stays exactly as it was, because exit
+    # code 2 is a promise about schema coverage and nothing else.
+    read_any = {i for i, rules in applicable.items() if rules}
     for rule in registry.project_rules:
         if rule.meta.domain not in SCHEMA_DOMAINS:
             continue
@@ -173,7 +184,32 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
         for i, ctx in enumerate(contexts):
             if rule.applies_to(ctx):
                 inspected.add(i)
-    result.files_checked = len(inspected)
+    result.schema_checked = len(inspected)
+    # `files_checked` keeps its old meaning for the database domain — the number of
+    # files a schema rule looked at — unless no schema rule ran at all but another
+    # domain did. Then the honest number is what was opened: a JS repo where
+    # ARCH-01 just built a graph is not a repo where "nothing could be read", and
+    # printing that would be its own kind of false pass.
+    if inspected:
+        result.files_checked = len(inspected)
+    else:
+        for rule in registry.project_rules:
+            configured = cfg.get("rules", {}).get(rule.meta.id)
+            if is_silent(configured if configured is not None else rule.meta.default_severity):
+                continue
+            for i, ctx in enumerate(contexts):
+                if rule.applies_to(ctx):
+                    read_any.add(i)
+        # Widening here is only honest when there is nothing schema-shaped that
+        # went unread. A Django repo has models.py — schema this tool cannot
+        # parse — and letting the architecture domain's file count stand in for
+        # it turns exit 2 into exit 0, which is the false pass Phase 2 closed.
+        # So: an unreadable schema stack always wins, and the CLI prints the
+        # "do not treat this as a pass" warning.
+        if find_unsupported(targets):
+            result.files_checked = 0
+        else:
+            result.files_checked = len(read_any)
 
     for i, ctx in enumerate(contexts):
         file_findings = []
@@ -194,6 +230,10 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
                     position=finding.position,
                     message=finding.message,
                     domain=finding.domain,
+                    # Carried through, not dropped: a rule may state its own
+                    # applicability so the coverage count can ask "did anything
+                    # read this file" without asking "did any domain run".
+                    applies=finding.applies,
                 ))
         # Reading order, not rule order. 0.10.2 checked every rule per line, so
         # its output follows the file; iterating per rule instead would print all
@@ -215,6 +255,7 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
                 position=finding.position,
                 message=finding.message,
                 domain=finding.domain,
+                applies=finding.applies,
             ))
 
     return result

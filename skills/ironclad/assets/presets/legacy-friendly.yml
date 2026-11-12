@@ -20,6 +20,12 @@ rules:
   SEC-01: warn
   SEC-02: warn
   SEC-03: warn
+  # Off in this preset on purpose: an older codebase has cycles it will not fix
+  # this quarter, and a first run that opens with 40 of them is a first run
+  # nobody repeats.
+  ARCH-01: off
+  ARCH-02: off
+
 exceptions: []
 boolean_allowlist:
   - is_active

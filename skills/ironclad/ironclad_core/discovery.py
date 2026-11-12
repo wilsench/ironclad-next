@@ -101,6 +101,15 @@ def matches(path: Path, extensions) -> bool:
     return any(path.name.startswith(f"{e}.") for e in exts if e.startswith("."))
 
 
+# Generated and vendored assets are not source. A docs bundle that *describes*
+# Sequelize models matched `DataTypes.` and made a Next.js repo claim it was full
+# of unreadable schema — the same class of bug as scanning the tool's own
+# `.agent/standards.yml`: text about a thing is not the thing.
+_ASSET_PATH = re.compile(r"(?:^|/)(?:public|static|assets|dist|build|out|"
+                         r"_next|coverage|vendor|node_modules)/", re.I)
+_ASSET_NAME = re.compile(r"\.(?:min|bundle|chunk)\.[cm]?js$|\.map$", re.I)
+
+
 def find_unsupported(paths) -> dict:
     """Schema files in stacks we cannot parse. Reported, never silently skipped."""
     hits: dict = {}
@@ -112,6 +121,12 @@ def find_unsupported(paths) -> dict:
             if f.suffix not in UNSUPPORTED_HINTS:
                 continue
             if set(f.parts) & SKIP_DIRS or _is_nested_dependency(root, f):
+                continue
+            try:
+                rel = str(f.relative_to(root))
+            except ValueError:
+                rel = str(f)
+            if _ASSET_PATH.search(rel.replace("\\", "/")) or _ASSET_NAME.search(f.name):
                 continue
             try:
                 text = f.read_text(encoding="utf-8", errors="replace")
