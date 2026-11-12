@@ -306,6 +306,47 @@ def test_wrapper_does_not_append_preset():
         ok("wrapper passes checker args through untouched")
 
 
+def test_package_ships_with_the_checker():
+    """check_schema.py is an entry point; without ironclad_core it exits 3.
+
+    Every path that copies the checker somewhere — the install payload, the
+    front matter of `ironclad init`, `--with-checker` — must copy the package
+    too, or that copy is dead on arrival.
+    """
+    with tempfile.TemporaryDirectory() as td:
+        d = Path(td)
+        repo = d / "repo"
+        repo.mkdir()
+        (repo / "a.sql").write_text("CREATE TABLE a (id INT, status ENUM('x'));\n")
+
+        env = dict(os.environ, USERPROFILE=str(repo))     # Windows-safe, unused here
+        r = run([sys.executable, str(SKILL / "scripts" / "init_standards.py"),
+                 str(repo), "--preset", "strict", "--with-checker"], env=env)
+        core = repo / "scripts" / "ironclad_core"
+        if not core.is_dir():
+            bad("--with-checker copies ironclad_core/", r.stdout + r.stderr)
+            return
+        ok("--with-checker copies ironclad_core/")
+
+        r = run([sys.executable, "scripts/check_schema.py", "."], cwd=repo)
+        if r.returncode == 3 or "engine is missing" in (r.stdout + r.stderr):
+            bad("the copied checker runs", r.stdout + r.stderr)
+        elif r.returncode != 1:
+            bad("the copied checker runs", f"expected exit 1, got {r.returncode}\n"
+                                           f"{r.stdout}{r.stderr}")
+        else:
+            ok("the copied checker runs")
+
+        # And the same copy must work with the skill gone from disk.
+        r = run([sys.executable, "scripts/check_schema.py", "."], cwd=repo,
+                env={k: v for k, v in os.environ.items() if k != "IRONCLAD_HOME"})
+        if r.returncode != 1:
+            bad("the copied checker works without the skill on disk",
+                f"exit {r.returncode}\n{r.stdout}{r.stderr}")
+        else:
+            ok("the copied checker works without the skill on disk")
+
+
 def main() -> int:
     print("Regression tests — false passes found by the 0.10.2 audit\n")
     for fn in (test_preset_flag_wins_over_repo,
@@ -313,6 +354,7 @@ def main() -> int:
                test_coherence_repo_is_checkable,
                test_manifest_matches_payload,
                test_curl_only_install_gets_full_payload,
+               test_package_ships_with_the_checker,
                test_wrapper_does_not_append_preset):
         print(f"{fn.__name__}:")
         try:

@@ -166,7 +166,9 @@ def main() -> int:
         print(f"wrote {yml_target.relative_to(repo)} (preset: {preset})")
 
     # 3. optional checker copy — preset files travel with it, or `--preset` breaks
-    # in the target repo once the skill directory is not on disk.
+    # in the target repo once the skill directory is not on disk. The engine
+    # package travels too: check_schema.py is now an entry point over
+    # ironclad_core/, and a lone copy would exit 3.
     if args.with_checker:
         scripts = repo / "scripts"
         scripts.mkdir(exist_ok=True)
@@ -182,6 +184,15 @@ def main() -> int:
             if dest.suffix == ".py":
                 dest.chmod(0o755)
             print(f"wrote {dest.relative_to(repo)}")
+
+        core_src = SKILL_DIR / "ironclad_core"
+        core_dest = scripts / "ironclad_core"
+        if core_src.is_dir():
+            if core_dest.exists():
+                shutil.rmtree(core_dest)
+            shutil.copytree(core_src, core_dest,
+                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            print(f"wrote {core_dest.relative_to(repo)}/")
 
     print("\nnext:")
     print("  python3 scripts/check_schema.py . --json     # uses .agent/standards.yml")

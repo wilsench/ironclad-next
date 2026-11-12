@@ -124,10 +124,18 @@ cmd_init() {
     cp "$TEMPLATE" "$root/.agent/standards.md"
     echo "wrote   .agent/standards.md"
   fi
+  # The checker is now an entry point over ironclad_core/. Copying only
+  # check_schema.py would produce a repo whose `python3 scripts/check_schema.py`
+  # exits 3 ("engine is missing"), so the package travels with it. This is the
+  # same rule as the install payload: the thing that runs and the thing that is
+  # shipped are listed once.
   cp "$CHECKER" "$root/scripts/check_schema.py"
   cp "$PRESETS/"*.yml "$root/scripts/presets/"
+  rm -rf "$root/scripts/ironclad_core"
+  cp -R "$IRONCLAD_HOME/ironclad_core" "$root/scripts/ironclad_core"
+  find "$root/scripts/ironclad_core" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
   chmod +x "$root/scripts/check_schema.py"
-  echo "wrote   scripts/check_schema.py + scripts/presets/"
+  echo "wrote   scripts/check_schema.py + scripts/presets/ + scripts/ironclad_core/"
 
   if [ -f "$AGENT_FILES" ] && [ -z "${IRONCLAD_NO_AGENT_FILES:-}" ]; then
     echo
