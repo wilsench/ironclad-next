@@ -349,6 +349,41 @@ yang paling berbahaya untuk sebuah gate.
 Akar masalahnya arsitektural: nilai default disisipkan sebagai argumen CLI, bukan
 sebagai nilai yang bisa ditimpa secara eksplisit.
 
+### 7.3 BUG-C — Repo dengan preset `coherence` sama sekali tidak bisa diperiksa
+
+**Keparahan: tinggi** (alat berhenti bekerja, bukan sekadar salah menilai).
+
+Ditemukan saat memperbaiki BUG-B, dan penyebabnya satu akar dengan BUG-B:
+wrapper mengubah *nama* preset repo menjadi argumen `--preset`, padahal
+`load_preset` (`:183-190` di 0.10.2) **melewati** pencarian
+`.agent/standards.yml` bila `--preset` diberikan:
+
+```python
+if not layers:          # hanya bila --preset TIDAK diberikan
+    ...cari .agent/standards.yml...
+```
+
+Jadi `--preset coherence` dikirim, berkas repo tidak pernah dibaca, dan nama
+`coherence` ditolak — bukan karena tidak ada, tapi karena presets dibaca dari
+`assets/presets/` di direktori skill. Di mesin yang dipasang lewat `curl|bash`
+berkas itu tidak ada (BUG-A), sehingga:
+
+```
+$ ironclad check .
+unknown preset 'coherence' — available: balanced, legacy-friendly, strict
+$ echo $?
+2
+```
+
+Ini juga berarti **`exceptions` dan `boolean_allowlist` milik repo tidak pernah
+dipakai** lewat wrapper, karena seluruh berkas repo dilewati.
+
+Perbaikan BUG-B secara struktural (menghapus penyisipan `--preset`, membiarkan
+checker membaca berkas repo sendiri) menutup BUG-C sekaligus. Tambalan kedua
+diperlukan: berkas yang hanya berisi `name: <preset>` — persis yang ditulis
+`ironclad preset` — harus diselesaikan ke aturan preset tersebut, dengan
+`exceptions` repo tetap dipertahankan.
+
 ---
 
 ## 8. Kelemahan arsitektur
@@ -477,7 +512,32 @@ Fondasinya lebih baik daripada rata-rata alat sejenis: nol dependensi, exit code
 stabil, jujur soal cakupan, dan punya konsep "instruksi yang ditanam" yang jarang.
 Yang tidak ada adalah **struktur untuk tumbuh**.
 
-Dua bug yang ditemukan bukan cacat desain besar — keduanya kecil dan bisa
-diperbaiki hari ini. Tapi keduanya menunjukkan pola yang sama: **jalur yang tidak
+Tiga bug yang ditemukan bukan cacat desain besar — semuanya kecil dan bisa
+diperbaiki hari ini. Tapi ketiganya menunjukkan pola yang sama: **jalur yang tidak
 diuji adalah jalur yang rusak**, dan jalur yang paling tidak diuji adalah jalur
 yang dipakai pengguna baru.
+
+---
+
+## 13. Status perbaikan (Fase 0.5)
+
+Ketiga bug diperbaiki dan dikunci dengan test regresi di
+`tests/test_regressions.py` (19 pemeriksaan, dijalankan di CI).
+
+| Bug | Perbaikan | Bukti |
+|---|---|---|
+| **A** — payload tidak lengkap | `install.sh` menurunkan daftar berkas dari payload (`_manifest`), bukan menulisnya tangan; `sync-mirror.sh` menerbitkan `MANIFEST` dan membuang berkas usang di mirror | Test `test_curl_only_install_gets_full_payload` memasang dari script sendirian: 14 berkas terpasang, `ironclad update` dan `init coherence` jalan |
+| **B** — `--preset` ditelan | wrapper tidak lagi menyisipkan `--preset`; prioritas dipindah ke satu tempat di `load_preset` | `check . --preset strict` → exit 1 (dulu 0); `--preset legacy-friendly` pada repo `strict` → exit 0 |
+| **C** — repo `coherence` tak bisa diperiksa | berkas repo selalu dibaca sebagai lapisan; `name: <preset>` diselesaikan ke aturannya, `exceptions` repo dipertahankan | `check .` pada repo coherence → exit 1 dengan DB-08 |
+
+**Prioritas akhir yang berlaku** (didokumentasikan di `load_preset`):
+
+```
+builtin:balanced  <  .agent/standards.yml  <  --preset  <  --config
+```
+
+**Yang tidak berubah:** `drill.py --selftest` tetap 20/20, 8 ID aturan tetap,
+exit code 0/1/2/10 tetap, nama preset tetap, format `standards.yml` tetap, dan
+`bin/` tetap tidak dipasang ke direktori skill (perintah ada di
+`~/.local/bin/ironclad` dengan `IRONCLAD_HOME` tertanam).
+

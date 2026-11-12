@@ -25,6 +25,18 @@ python3 scripts/check_schema.py [paths…] [opsi]
 | `--strict` | eskalasi semua warn jadi error (flag lama) |
 | `--list-presets` | tampilkan preset beserta hitungannya |
 
+Urutan prioritas, dari paling lemah ke paling kuat:
+
+```
+builtin:balanced  <  .agent/standards.yml  <  --preset  <  --config
+```
+
+Berkas `.agent/standards.yml` **selalu** dibaca — `exceptions` dan
+`boolean_allowlist` milik repo tetap berlaku walaupun kamu memberi `--preset`.
+Yang ditimpa preset hanyalah tingkat keparahan per aturan. Sebuah berkas yang
+hanya berisi `name: coherence` (persis yang ditulis `ironclad preset`) dibaca
+sebagai preset tersebut, jadi keduanya sah: nama saja, atau aturan eksplisit.
+
 ## Exit code
 
 | Kode | Arti |

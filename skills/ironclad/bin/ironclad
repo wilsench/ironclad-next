@@ -51,18 +51,21 @@ current_preset() {
 
 cmd_check() {
   local root; root="$(find_root)"
-  local preset; preset="$(current_preset)"
   cd "$root"
-  # pass everything through: --json, --preset, specific paths
+  # Do NOT append --preset here. The repo's .agent/standards.yml is layered in
+  # the checker, and a caller who typed `--preset strict` must keep that choice.
+  # This used to append the repo preset *after* the user's args, so argparse
+  # took the last one and `ironclad check --preset strict` silently ran as
+  # balanced — a gate that passes what it was asked to block.
   local rc=0
-  python3 "$CHECKER" "${@:-.}" --preset "$preset" || rc=$?
+  python3 "$CHECKER" "${@:-.}" || rc=$?
   # A one-line nudge on stderr, from cache only — no network here, and the exit code
   # is passed through untouched. A version check must never decide whether a build
   # passed: that would make CI depend on GitHub being reachable.
   # No stderr redirect here: the script prints its hint on stderr, and redirecting
   # it to /dev/null is exactly how the hint silently disappeared the first time.
   # The script owns its own quietness (no tty, muted, or no cached update = silence).
-  [ -f "$UPDATE" ] && python3 "$UPDATE" --hint >/dev/null || true
+  [ -f "$UPDATE" ] && python3 "$UPDATE" --hint >/dev/null 2>&1 || true
   return $rc
 }
 

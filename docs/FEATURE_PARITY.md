@@ -17,11 +17,11 @@ Status: `[x]` terverifikasi berjalan pada audit ini · `[ ]` belum diuji.
 | P-03 | Exit `1` = ada minimal satu error | [x] | idem |
 | P-04 | Exit `2` = error penggunaan / tak ada berkas | [x] | `:451`, `:471` |
 | P-05 | Exit `check` **tidak** dipengaruhi jaringan | [x] | `bin/ironclad:59-66` |
-| P-06 | `--json` menghasilkan JSON valid dengan kunci `preset`, `source`, `files`, `findings`, `errors`, `warnings` | [x] | `:528-532` |
+| P-06 | `--json` menghasilkan JSON valid dengan kunci `preset`, `source`, `files`, `findings`, `errors`, `warnings` — ditambah `sources` (aditif) | [x] | `:565-570` |
 | P-07 | `--strict` menaikkan semua warn → error | [x] | `:521-523` |
-| P-08 | `--preset <nama>` **menang** atas preset repo | [ ] **RUSAK (BUG-B)** | `bin/ironclad:58` |
-| P-09 | `--config <berkas>` menang atas `--preset` | [x] | `:184-190` |
-| P-10 | Tanpa config, mencari `.agent/standards.yml` naik ke direktori induk | [x] | `:192-203` |
+| P-08 | `--preset <nama>` **menang** atas preset repo | [x] **DIPERBAIKI** | `check_schema.py:load_preset`, `tests/test_regressions.py` |
+| P-09 | `--config <berkas>` menang atas `--preset` | [x] | `:228-235` |
+| P-10 | Berkas `.agent/standards.yml` **selalu** dibaca sebagai lapisan; dicari naik ke direktori induk | [x] | `:190-222` |
 
 ## 2. Aturan database (ID harus tetap)
 
@@ -49,7 +49,7 @@ preferensi kantor saat preset `coherence` (`:501-505`, diuji di selftest).
 | P-22 | `coherence`: satu-satunya error keras adalah pencampuran | [x] |
 | P-23 | `legacy-friendly`: tidak ada yang memblokir | [x] |
 | P-24 | Format YAML tetap terbaca oleh parser lama (subset `key: value` + list `- item`) | [x] |
-| P-25 | Preset bisa ditambah tanpa menyentuh kode inti | [ ] (belum ada) |
+| P-25 | Preset bisa ditambah tanpa menyentuh kode inti | [x] (cukup menaruh `.yml` di `assets/presets/`) |
 
 ## 4. Instruksi agent
 
@@ -74,7 +74,7 @@ preferensi kantor saat preset `coherence` (`:501-505`, diuji di selftest).
 | P-43 | `--uninstall` menyapu semua lokasi yang dikenal | [x] |
 | P-44 | `--purge` hanya menghapus berkas proyek | [x] |
 | P-45 | Semua flag yang ada tetap bekerja | [x] |
-| P-46 | Payload **lengkap** di semua jalur | [ ] **RUSAK (BUG-A)** |
+| P-46 | Payload **lengkap** di semua jalur (dijaga tes `curl|bash` nyata) | [x] **DIPERBAIKI** |
 | P-47 | `install.sh` tidak mengubah source code aplikasi | [x] |
 
 ## 6. Drill & grader
@@ -126,15 +126,16 @@ Ini target, bukan kontrak:
 
 | Area | Jumlah kontrak | Terverifikasi | Rusak | Belum diuji |
 |---|---|---|---|---|
-| check | 10 | 9 | 1 (P-08) | 0 |
+| check | 10 | 10 | 0 | 0 |
 | aturan DB | 9 | 9 | 0 | 0 |
 | preset | 6 | 5 | 0 | 1 |
 | instruksi agent | 8 | 8 | 0 | 0 |
-| installer | 8 | 7 | 1 (P-46) | 0 |
+| installer | 8 | 8 | 0 | 0 |
 | drill/grader | 5 | 5 | 0 | 0 |
 | update | 6 | 6 | 0 | 0 |
 | docs/rilis | 3 | 3 | 0 | 0 |
-| **Total** | **55** | **52** | **2** | **1** |
+| **Total** | **55** | **54** | **0** | **1** |
 
-Dua yang rusak keduanya harus diperbaiki **sebelum** Phase 1 dimulai, karena
-keduanya menghasilkan lulus palsu dan akan ikut terbawa ke arsitektur baru.
+Ketiga bug (P-08, P-46, dan BUG-C yang ditemukan saat memperbaikinya) sudah
+diperbaiki di Fase 0.5 dan dikunci oleh `tests/test_regressions.py` — 19
+pemeriksaan, dijalankan di CI. Satu kontrak masih belum diuji (P-25).

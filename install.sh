@@ -221,6 +221,9 @@ if [ -n "$UNINSTALL" ]; then
   exit 0
 fi
 
+SELF_DIR_TMP="$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo .)"
+SELF_PAYLOAD="$SELF_DIR_TMP/skills/$SKILL_NAME"
+
 # ---- fetch ------------------------------------------------------------------
 PRIMARY="https://raw.githubusercontent.com/${REPO}/${REF}/skills/${SKILL_NAME}"
 MIRROR="${IRONCLAD_MIRROR:-https://wilsench.my.id/ironclad/pkg}"
@@ -228,11 +231,42 @@ MIRROR="${IRONCLAD_MIRROR:-https://wilsench.my.id/ironclad/pkg}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-FILES="SKILL.md templates/standards.md
-references/database.md references/presets.md references/extending.md
-assets/presets/balanced.yml assets/presets/strict.yml assets/presets/legacy-friendly.yml
-scripts/check_schema.py scripts/init_standards.py scripts/drill.py
-scripts/agent_files.py bin/ironclad"
+# What the installer must fetch when the payload is not already on disk.
+#
+# This list used to be maintained by hand, and it drifted: 0.10.2 shipped
+# `ironclad update` and the `coherence` preset but never added
+# scripts/update_check.py and assets/presets/coherence.yml here. The local
+# checkout path still worked (it copies the whole directory), so the bug only
+# ever hit the curl|bash path — the one new users take. A hand-written manifest
+# of files that also exist on disk is a bug waiting to happen, so it is now
+# derived from the payload itself.
+_manifest() {
+  # 1. A checkout: the payload is on disk. List it, so nothing can be forgotten.
+  if [ -d "$SELF_PAYLOAD" ]; then
+    ( cd "$SELF_PAYLOAD" && find . -type f \
+        ! -path './.git/*' ! -path '*/__pycache__/*' ! -name '*.pyc' \
+        | sed 's|^\./||' | sort | tr '\n' ' ' )
+    return 0
+  fi
+  # 2. curl|bash: the script arrived alone. The mirror publishes an index of the
+  #    payload it is serving, so the list comes from the publisher, not from this
+  #    script's memory of it.
+  local idx
+  if idx="$(curl -fsSL --max-time 20 "$MIRROR/MANIFEST" 2>/dev/null)" && [ -n "$idx" ]; then
+    printf '%s ' $idx
+    return 0
+  fi
+  # 3. No index either (old mirror). The floor: everything a usable install needs.
+  printf '%s ' \
+    SKILL.md templates/standards.md \
+    references/database.md references/presets.md references/extending.md \
+    assets/presets/balanced.yml assets/presets/strict.yml \
+    assets/presets/legacy-friendly.yml assets/presets/coherence.yml \
+    scripts/check_schema.py scripts/init_standards.py scripts/drill.py \
+    scripts/agent_files.py scripts/update_check.py bin/ironclad
+}
+
+FILES="$(_manifest)"
 
 fetch_from() {
   base="$1"; label="$2"
@@ -290,6 +324,9 @@ for d in $DESTS; do
   mkdir -p "$d/$SKILL_NAME"
   cp -R "$TMP/." "$d/$SKILL_NAME/"
   rm -rf "$d/$SKILL_NAME/bin"
+  # Bytecode is machine-specific and belongs to whoever ran the script, not to
+  # the payload. A checkout's __pycache__ used to ride along into every install.
+  rm -rf "$d/$SKILL_NAME/scripts/__pycache__"
   chmod +x "$d/$SKILL_NAME/scripts/"*.py 2>/dev/null || true
   [ -z "$PRIMARY_DIR" ] && PRIMARY_DIR="$d/$SKILL_NAME"
   echo "  → $d/$SKILL_NAME"

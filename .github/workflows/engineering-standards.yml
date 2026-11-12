@@ -49,6 +49,13 @@ jobs:
       - name: Self-test the gate itself
         run: python skills/ironclad/scripts/drill.py --selftest
 
+      # False passes found by the 0.10.2 audit: an install that shipped an
+      # incomplete payload, and a --preset flag that was silently ignored.
+      # These are the failures a green build used to hide, so they get their
+      # own step rather than living inside the selftest.
+      - name: Regressions — no false passes
+        run: python tests/test_regressions.py
+
       - name: Bootstrap works from a clean dir
         run: |
           rm -rf /tmp/ic && mkdir -p /tmp/ic && cd /tmp/ic

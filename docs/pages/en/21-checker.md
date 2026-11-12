@@ -30,9 +30,22 @@ python3 scripts/check_schema.py . --preset balanced
 |---|---|
 | `paths…` | files or directories; default `.` |
 | `--preset NAME` | `balanced`, `coherence`, `strict`, `legacy-friendly` |
-| `--strict` | shorthand for `--preset strict` |
+| `--config FILE` | explicit config file; outranks `--preset` |
+| `--strict` | escalate all warns to errors — **deprecated**, use `--preset strict` |
 | `--json` | JSON on stdout instead of the human report |
 | `--list-presets` | print the presets it can see, with error/warn counts |
+
+Precedence, weakest to strongest:
+
+```
+builtin:balanced  <  .agent/standards.yml  <  --preset  <  --config
+```
+
+`.agent/standards.yml` is **always** read — the repo's `exceptions` and
+`boolean_allowlist` still apply when you pass `--preset`. The preset only
+overrides per-rule severity. A file that contains nothing but `name: coherence`
+(exactly what `ironclad preset` writes) is read as that preset, so both forms
+are valid: a name alone, or explicit rules.
 
 Without `--preset`, the checker looks for `.agent/standards.yml` and walks up
 from the target directory. The report's last line tells you which one it used —

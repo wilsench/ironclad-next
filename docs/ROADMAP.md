@@ -20,28 +20,35 @@ Setiap fase punya **gerbang** yang harus lulus sebelum fase berikutnya dimulai.
 
 ---
 
-## Fase 0.5 — Perbaikan bug & jaring regresi
+## Fase 0.5 — Perbaikan bug & jaring regresi (SELESAI)
 
 **Kenapa sebelum Fase 1:** keduanya menghasilkan "lulus" palsu. Membangun mesin
 baru di atasnya berarti menyalin cacatnya.
 
 **Pekerjaan:**
 
-| # | Tugas | Berkas | Uji regresi |
+| # | Tugas | Berkas | Status |
 |---|---|---|---|
-| 1 | Tambah `update_check.py` + `coherence.yml` ke manifest `FILES` | `install.sh:231-235` | install lewat mirror → kedua berkas ada |
-| 2 | Turunkan manifest dari filesystem, bukan ditulis tangan | `install.sh`, `scripts/sync-mirror.sh` | jumlah berkas yang diharapkan == yang terpasang |
-| 3 | `--preset` pengguna menang atas preset repo | `bin/ironclad:52-67` | `check --preset strict` pada fixture yang seharusnya gagal → exit 1 |
-| 4 | Uji installer di CI (HOME sandbox) | `.github/workflows/` | job baru: install → verifikasi → uninstall |
-| 5 | `ironclad doctor` minimal: cek skill, python, berkas hilang | `bin/ironclad` | `doctor` mendeteksi skill tanpa `update_check.py` |
+| 1 | Manifest payload diturunkan dari filesystem, bukan ditulis tangan | `install.sh` (`_manifest`) | selesai |
+| 2 | Mirror menerbitkan `MANIFEST` + membuang berkas usang | `scripts/sync-mirror.sh` | selesai |
+| 3 | `--preset` pengguna menang atas preset repo (satu tempat) | `check_schema.py:load_preset` | selesai |
+| 4 | Berkas repo selalu dilapisi; `name:` saja diselesaikan ke presetnya | `check_schema.py:load_preset` | selesai |
+| 5 | Uji installer di CI (`curl|bash` di HOME sandbox) | `tests/test_regressions.py` + workflow | selesai |
+| 6 | `ironclad doctor` minimal | — | **belum** (Fase 5) |
 
 **Gerbang:**
-- [ ] C-10 lulus (payload lengkap lewat mirror)
-- [ ] C-07 lulus (`--preset` benar-benar berlaku)
-- [ ] Selftest tetap 20/20
-- [ ] CI punya job yang menguji install/uninstall
+- [x] C-10 lulus (payload lengkap lewat mirror): 14 berkas, `update` & `init coherence` jalan
+- [x] C-07 lulus (`--preset` benar-benar berlaku): `strict`→exit 1, `legacy-friendly`→exit 0
+- [x] Selftest tetap 20/20
+- [x] CI punya langkah regresi (`tests/test_regressions.py`, 19 pemeriksaan)
+- [x] Instalasi nyata di HOME bersih (bukan hanya unit test)
 
-**Risiko:** rendah. Tidak menyentuh aturan.
+**Catatan:** pekerjaan #1–#5 juga menutup BUG-C (repo berpreset `coherence` tidak
+bisa diperiksa sama sekali), yang tidak terlihat saat audit awal karena hanya
+muncul lewat wrapper pada mesin hasil `curl|bash`.
+
+**Risiko:** rendah. Tidak ada aturan yang berubah; `drill.py --selftest` tetap
+20/20 dan fixture tidak disentuh.
 
 ---
 

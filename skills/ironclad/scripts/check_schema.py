@@ -168,39 +168,77 @@ def _parse_simple_yaml(text):
     return data
 
 
+def _find_repo_config(repo_paths):
+    """The repo's own policy: .agent/standards.yml at or above the first target."""
+    for base in (Path(p) for p in (repo_paths or ["."])):
+        base = base.resolve()
+        for d in [base, *base.parents]:
+            cand = d / ".agent" / "standards.yml"
+            if cand.is_file():
+                return cand
+    return None
+
+
 def load_preset(name=None, config_path=None, repo_paths=None):
-    """Merge preset layers. Returns (config, source_label)."""
+    """Merge preset layers. Returns (config, source_label).
+
+    Precedence, weakest to strongest:
+
+        built-in balanced  <  repo .agent/standards.yml  <  --preset  <  --config
+
+    The repo policy must be layered even when --preset is given, or an explicit
+    flag would silently discard the repo's own `exceptions` and allowlists.
+    And --preset must beat the repo, because a caller asking for `strict` in CI
+    is asking for a stricter run than whatever the repo committed — it used to
+    lose that argument silently.
+    """
     layers = []
-    source = "builtin:balanced"
+    labels = []
 
-    if name and (PRESET_DIR / f"{name}.yml").is_file():
-        layers.append(_parse_simple_yaml((PRESET_DIR / f"{name}.yml").read_text()))
-        source = f"preset:{name}"
-    elif name:
-        print(f"unknown preset '{name}' — available: "
-              f"{', '.join(sorted(p.stem for p in PRESET_DIR.glob('*.yml')))}", file=sys.stderr)
-        return None, None
+    # 1. The repo's own policy. Skipped when an explicit config file is named:
+    #    two policy files at once is a question nobody wants to answer twice.
+    repo_cfg = None if config_path else _find_repo_config(repo_paths)
+    if repo_cfg is not None:
+        repo_layer = _parse_simple_yaml(repo_cfg.read_text())
+        # `name:` alone is a valid policy file — that is what `ironclad preset`
+        # writes. Resolve it to the preset's rules here, in one place, instead of
+        # having the shell turn the name into --preset (which is how a repo on
+        # `coherence` became uncheckable, and how repo `exceptions` got dropped).
+        # Overlay, never replace: a repo may name a preset *and* keep its own
+        # exceptions, and replacing the layer would quietly delete them.
+        named = repo_layer.get("name")
+        if named and not repo_layer.get("rules") and (PRESET_DIR / f"{named}.yml").is_file():
+            resolved = _parse_simple_yaml((PRESET_DIR / f"{named}.yml").read_text())
+            resolved.update({k: v for k, v in repo_layer.items() if v})
+            repo_layer = resolved
+        layers.append(repo_layer)
+        labels.append(str(repo_cfg))
 
+    # 2. An explicitly requested preset outranks the committed one.
+    if name:
+        preset_file = PRESET_DIR / f"{name}.yml"
+        if not preset_file.is_file():
+            print(f"unknown preset '{name}' — available: "
+                  f"{', '.join(sorted(p.stem for p in PRESET_DIR.glob('*.yml')))}",
+                  file=sys.stderr)
+            return None, None
+        layers.append(_parse_simple_yaml(preset_file.read_text()))
+        labels.append(f"preset:{name}")
+
+    # 3. An explicit config file outranks everything.
     if config_path:
         cfg = Path(config_path)
         if not cfg.is_file():
             print(f"config not found: {cfg}", file=sys.stderr)
             return None, None
         layers.append(_parse_simple_yaml(cfg.read_text()))
-        source = str(cfg)
+        labels.append(str(cfg))
 
-    if not layers:
-        # auto-discover .agent/standards.yml, walking up from the first target
-        for base in (Path(p) for p in (repo_paths or ["."])):
-            base = base.resolve()
-            for d in [base, *base.parents]:
-                cand = d / ".agent" / "standards.yml"
-                if cand.is_file():
-                    layers.append(_parse_simple_yaml(cand.read_text()))
-                    source = str(cand)
-                    break
-            if layers:
-                break
+    # `source` keeps its old shape — the strongest layer — because consumers may
+    # parse it. The full chain goes in a new key, so layering is visible without
+    # breaking anyone. Additive only, per COMPATIBILITY_PLAN.md.
+    source = labels[-1] if labels else "builtin:balanced"
+    sources = labels or ["builtin:balanced"]
 
     merged = {"name": DEFAULT_PRESET, "rules": dict(BUILTIN_PRESET["rules"]),
               "exceptions": [], "boolean_allowlist": list(BUILTIN_PRESET["boolean_allowlist"])}
@@ -212,6 +250,7 @@ def load_preset(name=None, config_path=None, repo_paths=None):
             merged["boolean_allowlist"] = layer["boolean_allowlist"]
         if layer.get("name"):
             merged["name"] = layer["name"]
+    merged["sources"] = sources
     return merged, source
 
 
@@ -527,6 +566,7 @@ def main():
 
     if args.json:
         print(json.dumps({"preset": cfg.get("name"), "source": source,
+                          "sources": cfg.get("sources") or [source],
                           "files": len(files), "findings": findings,
                           "errors": len(errors), "warnings": len(warns)},
                          indent=2, ensure_ascii=False))
