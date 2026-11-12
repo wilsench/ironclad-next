@@ -14,6 +14,12 @@ rules:
   DB-06: warn       # money stored as float/double
   DB-07: warn       # timestamp without a timezone
   DB-08: warn       # project mixes enum/integer/text for the same concept
+# --- API domain (Phase 2). Every one of these is silent on a repo that is
+# consistent with itself; they fire on disagreement, not on taste.
+  API-01: warn      # endpoint paths named in more than one style
+  API-02: warn      # error payload returned with a 2xx status
+  API-06: warn      # OpenAPI document no longer matches the routes
+  API-07: error     # the same route declared twice — one can never run
 exceptions: []
 boolean_allowlist:
   - is_active

@@ -141,10 +141,14 @@ def test_repo_preset_layers_with_flag():
         # The parser must keep the whole list, not just its first entry.
         (d / ".agent" / "standards.yml").write_text(
             "name: balanced\nexceptions:\n  - skip.sql\n  - keep.sql\n")
-        r = check(["."], cwd=d)
-        if "no .sql" not in r.stderr:
+        r = check([".", ], cwd=d)
+        # Assert the behaviour, not the wording: nothing is left to check, so the
+        # run must refuse to look clean. It used to grep for "no .sql", which
+        # broke the day the message learned to name every domain's extensions.
+        if r.returncode != 2 or ".sql" not in r.stderr:
             bad("multi-entry exceptions are all honoured",
-                f"expected nothing left to check, got:\n{r.stdout}{r.stderr}")
+                f"expected exit 2 with nothing checked, got exit {r.returncode}:\n"
+                f"{r.stdout}{r.stderr}")
         else:
             ok("multi-entry exceptions are all honoured")
 

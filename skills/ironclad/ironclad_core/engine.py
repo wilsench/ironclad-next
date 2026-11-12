@@ -56,9 +56,21 @@ class Rule:
 
 class ProjectRule:
     """A rule that judges the project, not a file. Runs once, after all files."""
-    meta: RuleMeta
 
-    def check(self, contexts: list[FileContext], cfg: dict) -> list[Finding]:
+    meta: RuleMeta
+    extensions: tuple[str, ...] = ()
+
+    def applies_to(self, ctx: "FileContext") -> bool:
+        """Is this file worth even reading for this rule?
+
+        Separate from `Rule.applies`, which decides whether to *judge* a file it
+        has already accepted. A project rule looks at many files and may judge
+        none of them, but reading a 400-file repo to guess is wasteful and, worse,
+        inflates `files_checked` with files no rule ever examined.
+        """
+        return not self.extensions or ctx.path.suffix in self.extensions
+
+    def check(self, contexts: list["FileContext"], cfg: dict) -> list[Finding]:
         raise NotImplementedError
 
 
@@ -76,9 +88,24 @@ class Registry:
     def rule_ids(self) -> list[str]:
         return [r.meta.id for r in (*self.file_rules, *self.project_rules)]
 
+    def extensions(self) -> set[str]:
+        """What the loaded domains claim they can read.
+
+        Declared by the rules instead of listed in discovery, so adding a domain
+        is a new file rather than an edit to the core. A domain with no file
+        rules contributes nothing, which is correct: it cannot read anything.
+        """
+        out: set[str] = set()
+        for rule in (*self.file_rules, *self.project_rules):
+            out.update(getattr(rule, "extensions", ()) or ())
+        return out
+
+
 
 def _language_of(path: Path) -> str:
-    return {".sql": "sql", ".php": "php", ".prisma": "prisma"}.get(path.suffix, "unknown")
+    return {".sql": "sql", ".php": "php", ".prisma": "prisma",
+            ".js": "js", ".mjs": "js", ".cjs": "js", ".ts": "ts", ".tsx": "ts",
+            ".yml": "yaml", ".yaml": "yaml", ".json": "json"}.get(path.suffix, "unknown")
 
 
 def _severity_of(rule_id: str, cfg: dict, default: str) -> str:
@@ -87,7 +114,8 @@ def _severity_of(rule_id: str, cfg: dict, default: str) -> str:
 
 def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
     """Execute every applicable rule and collect the result."""
-    files = list(iter_files(targets, cfg.get("exceptions") or ()))
+    extensions = registry.extensions() or None
+    files = list(iter_files(targets, cfg.get("exceptions") or (), extensions))
     result = Result(files_checked=len(files),
                     preset=cfg.get("name", "balanced"),
                     source=source or "builtin:balanced",
@@ -106,11 +134,33 @@ def run(registry: Registry, cfg: dict, targets, source: str = "") -> Result:
             continue
         contexts.append(FileContext(path=path, text=text, language=_language_of(path)))
 
-    for ctx in contexts:
+    # "Checked" means a rule actually looked, not that the file was opened.
+    # With several domains loaded, the union of extensions pulls in files no
+    # rule can judge (a Django models.py is readable and unreadable at once);
+    # counting those made a repo with nothing checked exit 0. That is the exact
+    # false pass this tool exists to prevent, so coverage is measured per rule.
+    #
+    # Keyed by index, not by id(): a dict keyed on `id(ctx)` does not keep the
+    # object alive, CPython reuses the address after collection, and two files
+    # then share one key. That inflated the count by one per run on a one-file
+    # repo — found by asking why `1 file` printed `2`.
+    applicable = {i: [r for r in registry.file_rules if r.applies(ctx)]
+                  for i, ctx in enumerate(contexts)}
+    # A file counts as checked only if some rule would examine it, file-scoped or
+    # project-scoped. Otherwise a Django repo reports "1 file, 0 findings" — green
+    # exactly like a clean repo, which is the false pass this tool exists to stop.
+    inspected = {i for i, rules in applicable.items() if rules}
+    for rule in registry.project_rules:
+        if is_silent(_severity_of(rule.meta.id, cfg, rule.meta.default_severity)):
+            continue
+        for i, ctx in enumerate(contexts):
+            if rule.applies_to(ctx):
+                inspected.add(i)
+    result.files_checked = len(inspected)
+
+    for i, ctx in enumerate(contexts):
         file_findings = []
-        for rule in registry.file_rules:
-            if not rule.applies(ctx):
-                continue
+        for rule in applicable[i]:
             sev = _severity_of(rule.meta.id, cfg, rule.meta.default_severity)
             if is_silent(sev):
                 continue

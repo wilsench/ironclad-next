@@ -13,6 +13,10 @@ rules:
   DB-06: warn
   DB-07: warn
   DB-08: warn
+  API-01: warn
+  API-02: warn
+  API-06: warn
+  API-07: warn
 exceptions: []
 boolean_allowlist:
   - is_active

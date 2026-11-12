@@ -14,6 +14,10 @@ from ..engine import FileContext, ProjectRule, Registry, Rule
 
 DOMAIN = "database"
 
+# The file types this domain can read. Declared here, not in discovery: the
+# engine unions what the loaded domains claim, so a new domain means a new file.
+DATABASE_EXTS = (".sql", ".php", ".prisma")
+
 # ---------------------------------------------------------------- vocabulary
 # `type`/`tipe` must start a word segment, otherwise `mimeType`/`prototype`
 # false-positive.
@@ -97,6 +101,7 @@ def _comment_lines(text: str):
 
 # --------------------------------------------------------------------- rules
 class Db01Enum(Rule):
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-01", DOMAIN, "native enum in schema", "error")
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
@@ -113,6 +118,7 @@ class Db01Enum(Rule):
 
 
 class Db02MagicNumber(Rule):
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-02", DOMAIN, "magic number on a status field", "error")
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
@@ -151,6 +157,7 @@ class Db02MagicNumber(Rule):
 
 
 class Db03LookupFk(Rule):
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-03", DOMAIN, "status integer without FK/CHECK", "warn")
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
@@ -193,6 +200,7 @@ class Db03LookupFk(Rule):
 
 
 class Db04StatusText(Rule):
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-04", DOMAIN, "status stored as text", "error")
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
@@ -210,6 +218,7 @@ class Db04StatusText(Rule):
 
 
 class Db05BooleanName(Rule):
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-05", DOMAIN, "boolean named for a non-binary concept", "warn")
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
@@ -226,6 +235,7 @@ class Db05BooleanName(Rule):
 
 
 class Db06MoneyFloat(Rule):
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-06", DOMAIN, "money stored as float", "warn")
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
@@ -244,6 +254,7 @@ class Db06MoneyFloat(Rule):
 
 
 class Db07NaiveTimestamp(Rule):
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-07", DOMAIN, "timestamp without timezone", "warn")
 
     def check(self, ctx: FileContext, cfg: dict) -> list[Finding]:
@@ -292,12 +303,15 @@ class Db08MixedStatus(ProjectRule):
     per file: a reader needs to know a choice was never made, not that eleven
     files each picked something.
     """
+    extensions = DATABASE_EXTS
     meta = RuleMeta("DB-08", DOMAIN, "status stored more than one way", "warn",
                     scope="project")
 
     def check(self, contexts: list[FileContext], cfg: dict) -> list[Finding]:
         style_map = {}
         for ctx in contexts:
+            if ctx.path.suffix not in DATABASE_EXTS:
+                continue
             found = status_styles(ctx.text)
             if found:
                 style_map[str(ctx.path)] = found

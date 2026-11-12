@@ -55,10 +55,15 @@ def main(argv=None, preset_dir: Path | None = None) -> int:
     if cfg is None:
         return 2
 
-    result = run(load_all(), cfg, targets, source=source or "builtin:balanced")
+    registry = load_all()
+    result = run(registry, cfg, targets, source=source or "builtin:balanced")
 
     if result.files_checked == 0:
-        print("no .sql/.php/.prisma files found", file=sys.stderr)
+        # Name what the loaded domains actually read, not a hard-coded list. The
+        # message said ".sql/.php/.prisma" while the API domain was also reading
+        # .js/.ts, which told the user their JS repo had nothing to check.
+        exts = ", ".join(sorted(registry.extensions()))
+        print(f"no files any rule can read found (looked for: {exts})", file=sys.stderr)
         for line in coverage_warning(result, targets):
             print(line, file=sys.stderr)
         return 2
