@@ -64,12 +64,38 @@ def _load_package():
     return engine_main
 
 
+def _load_module(name: str):
+    """Import any callable from ironclad_core with the same layout search."""
+    for base in (_HERE, _UP):
+        if (base / "ironclad_core").is_dir():
+            if str(base) not in sys.path:
+                sys.path.insert(0, str(base))
+    import importlib
+    return getattr(importlib.import_module(f"ironclad_core.{name}"), f"{name}_main")
+
+
 def main(argv=None) -> int:
     engine_main = _load_package()
     if engine_main is None:
         # Exit 3, the documented "the tool itself could not run" code. Not 0:
         # a broken install must never look like a clean repo.
         return 3
+    # `--rules` / `--presets` are subcommands of the *checker*, not of the bash
+    # wrapper, so a repo that copied the checker in with `--with-checker` can read
+    # its rules without the skill installed. Dispatch before argparse, which
+    # would otherwise treat the word as a path.
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in ("rules", "presets", "doctor"):
+        verb, rest = argv[0], argv[1:]
+        try:
+            if verb == "rules":
+                return _load_module("rules")(rest, preset_dir=_preset_dir())
+            if verb == "doctor":
+                return _load_module("doctor")(rest, preset_dir=_preset_dir())
+            return engine_main(["--list-presets", *rest], preset_dir=_preset_dir())
+        except ImportError as exc:
+            print(f"ironclad: {verb} needs a complete install ({exc}).", file=sys.stderr)
+            return 3
     return engine_main(argv, preset_dir=_preset_dir())
 
 

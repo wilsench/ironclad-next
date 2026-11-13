@@ -41,6 +41,35 @@ def build_parser(preset_dir: Path) -> argparse.ArgumentParser:
     return ap
 
 
+def build_rules_parser(preset_dir: Path) -> argparse.ArgumentParser:
+    names = ", ".join(sorted(p.stem for p in preset_dir.glob("*.yml")))
+    ap = argparse.ArgumentParser(prog="ironclad rules",
+                                 description="what the rules are, and what they refuse to decide")
+    ap.add_argument("action", nargs="?", default="list", choices=("list", "explain"))
+    ap.add_argument("rule_id", nargs="?")
+    ap.add_argument("--preset", help=f"preset name ({names})")
+    ap.add_argument("--config", help="explicit config file")
+    ap.add_argument("--domain", help="only this domain")
+    ap.add_argument("paths", nargs="*", default=[".", ])
+    return ap
+
+
+def rules_main(argv=None, preset_dir: Path | None = None) -> int:
+    """`ironclad rules list` / `ironclad rules explain DB-01`."""
+    from .rules import explain_rule, list_rules
+
+    if preset_dir is None:
+        raise ValueError("preset_dir is required")
+    args = build_rules_parser(preset_dir).parse_args(argv)
+    if args.action == "explain":
+        if not args.rule_id:
+            print("ironclad: explain needs a rule id, e.g. `ironclad rules explain DB-01`",
+                  file=sys.stderr)
+            return 2
+        return explain_rule(preset_dir, args.rule_id, args)
+    return list_rules(preset_dir, args)
+
+
 def main(argv=None, preset_dir: Path | None = None) -> int:
     if preset_dir is None:
         raise ValueError("preset_dir is required: the entry point owns the search path")
@@ -81,4 +110,5 @@ def main(argv=None, preset_dir: Path | None = None) -> int:
 # Re-exported for callers that only need the built-in defaults.
 DEFAULT_CONFIG = BUILTIN_PRESET
 
-__all__ = ["main", "build_parser", "list_presets", "DEFAULT_CONFIG"]
+__all__ = ["main", "build_parser", "list_presets", "rules_main",
+           "build_rules_parser", "DEFAULT_CONFIG"]

@@ -134,7 +134,7 @@ Paling akhir karena butuh graf dependensi.
 
 ---
 
-## Fase 5 — DX
+## Fase 5 — DX (SELESAI)
 
 | Fitur | Alasan |
 |---|---|
@@ -146,6 +146,12 @@ Paling akhir karena butuh graf dependensi.
 
 **Gerbang Fase 5:** `init` pada repo dengan `.agent/` yang sudah ada **tidak
 mengubah apa pun** kecuali diminta.
+
+**Hasil:** lulus, diuji dengan hash pohon (bukan pembacaan kode). Lihat
+`docs/PHASE5_DX.md`. Tiga perintah baru: `doctor`, `rules`, `rules explain`;
+`init` mendeteksi stack; `--dry-run` menulis 0 berkas. Empat bug ditemukan dengan
+menjalankannya pada repo nyata, termasuk policy induk yang terpakai diam-diam dan
+help yang terpotong.
 
 ---
 

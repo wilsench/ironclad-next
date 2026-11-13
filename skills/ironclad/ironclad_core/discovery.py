@@ -25,8 +25,12 @@ SKIP_DIRS = {".git", "node_modules", "vendor", "dist", "build", ".next",
 # database domain because these are all schema-ish file types, and the warning is
 # about the repo as a whole ("half of this was not looked at"), not about a rule.
 UNSUPPORTED_HINTS = {
-    ".py": re.compile(r"\bmodels\.(?:Model|CharField|IntegerField|FloatField|DecimalField|"
-                      r"ForeignKey|SmallIntegerField)\b|\bColumn\(\s*(?:Integer|String|Float)"),
+    # Anchored on real declaration shapes, not on the word. A test file that
+    # *mentions* `models.Model` inside a fixture string is not a Django model —
+    # this tool's own test suite was reported as an unreadable schema stack
+    # because of exactly that.
+    ".py": re.compile(r"^\s*class\s+\w+\s*\(\s*(?:\w+\.)?Model\s*\)\s*:|"
+                      r"^\s*\w+\s*=\s*(?:models|db)\.\w+Field\s*\(", re.M),
     ".rb": re.compile(r"\bcreate_table\b|\bt\.(?:integer|string|decimal|float)\b"),
     ".ts": re.compile(r"\bpgTable\b|@Entity\b|\bDataTypes\.", re.I),
     ".js": re.compile(r"\bpgTable\b|\bDataTypes\.|\bSequelize\b|\bModel\.init\b"),
@@ -110,6 +114,19 @@ _ASSET_PATH = re.compile(r"(?:^|/)(?:public|static|assets|dist|build|out|"
 _ASSET_NAME = re.compile(r"\.(?:min|bundle|chunk)\.[cm]?js$|\.map$", re.I)
 
 
+_PY_TRIPLE = re.compile(r'"""(?:.|\n)*?"""|\'\'\'(?:.|\n)*?\'\'\'')
+
+
+def _strip_strings(text: str) -> str:
+    """Remove triple-quoted blocks so a fixture that quotes code is not code.
+
+    Deliberately not a parser: this only has to be good enough that a docstring
+    containing `class A(models.Model)` does not make a repo look like Django. It
+    preserves newlines so line numbers stay meaningful.
+    """
+    return _PY_TRIPLE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+
+
 def find_unsupported(paths) -> dict:
     """Schema files in stacks we cannot parse. Reported, never silently skipped."""
     hits: dict = {}
@@ -132,6 +149,11 @@ def find_unsupported(paths) -> dict:
                 text = f.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            if UNSUPPORTED_HINTS[f.suffix].search(text):
+            # A declaration inside a docstring or a fixture string is text about
+            # code, not code. Without this, this tool's own test suite — which
+            # contains `class Fake(models.Model)` as a fixture — was reported as
+            # an unreadable Django schema.
+            probe = _strip_strings(text) if f.suffix == ".py" else text
+            if UNSUPPORTED_HINTS[f.suffix].search(probe):
                 hits.setdefault(f.suffix, []).append(str(f))
     return hits

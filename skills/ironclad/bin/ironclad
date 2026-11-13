@@ -3,6 +3,10 @@
 #
 #   ironclad check     score this repo's schema against the rules (read-only)
 #   ironclad init      write .agent/ + scripts/ so agent and CI share the rules
+#   ironclad doctor    why is this not doing what I expected? (read-only)
+#   ironclad rules     list every rule and its effective severity;
+#                      `rules explain DB-01` for what it refuses to decide
+#   ironclad presets   the built-in presets and their error/warn counts
 #   ironclad preset N  switch strictness: balanced | strict | legacy-friendly
 #   ironclad status    where the skill and the project policy live
 #   ironclad drill     prove your agent knows: selftest the gate, or grade its output
@@ -69,6 +73,17 @@ cmd_check() {
   return $rc
 }
 
+# Pass a subcommand straight to the checker and keep its exit code. It must run
+# from the repo root like `check` does, or a relative path in a finding points
+# somewhere the user did not expect.
+cmd_check_sub() {
+  local root; root="$(find_root)"
+  cd "$root"
+  local rc=0
+  python3 "$CHECKER" "$@" || rc=$?
+  return $rc
+}
+
 # Ask only when a human is actually there. `curl | bash` and CI have no tty, and a
 # prompt there would hang the pipeline — so the default applies silently instead.
 ask_preset() {
@@ -94,7 +109,34 @@ ask_preset() {
 
 cmd_init() {
   local root; root="$(find_root)"
-  local preset="${1:-}"
+  local dry_run=0
+  local preset=""
+  for arg in "$@"; do
+    case "$arg" in
+      --dry-run) dry_run=1 ;;
+      -*) die "unknown flag: $arg (try --dry-run)" ;;
+      *) preset="$arg" ;;
+    esac
+  done
+  if [ -z "$preset" ]; then
+    # Detect first, ask second. A repo that already has artisan or next.config.ts
+    # has answered the question the prompt would ask; making someone choose a
+    # strictness level for a framework they just installed is a quiz, not a setup.
+    local detected why
+    detected="$(python3 -c "
+import sys
+sys.path.insert(0, '$IRONCLAD_HOME')
+from ironclad_core.config import suggested_preset
+p, why = suggested_preset('$root')
+print(p + '|' + why)
+" 2>/dev/null || echo '|')"
+    preset="${detected%%|*}"
+    why="${detected#*|}"
+    if [ -n "$preset" ]; then
+      echo "detected: ${why:-no markers} → preset $preset"
+      echo "          (override with: ironclad init <preset>)"
+    fi
+  fi
   if [ -z "$preset" ]; then
     preset="$(ask_preset)"
   fi
@@ -103,14 +145,36 @@ cmd_init() {
   esac
   [ -f "$PRESETS/$preset.yml" ] || die "unknown preset: $preset (balanced|strict|legacy-friendly)"
 
-  mkdir -p "$root/.agent" "$root/scripts/presets"
+  # Nothing here may run twice and produce a different tree. `init` is run by the
+  # second teammate, by CI, and by the person who forgot they already ran it; every
+  # one of those must leave the repo byte-identical.
+  emit() {      # emit <path> <action> [command...]
+    local p="$1" act="$2"; shift 2
+    if [ "$dry_run" = 1 ]; then
+      echo "would $act $p"
+      return 0
+    fi
+    "$@"
+  }
+
+  if [ "$dry_run" = 1 ]; then
+    echo "dry run — nothing will be written"
+  fi
+
+  if [ "$dry_run" = 0 ]; then
+    mkdir -p "$root/.agent" "$root/scripts/presets"
+  fi
   if [ -f "$root/.agent/standards.yml" ]; then
     echo "kept    .agent/standards.yml (preset: $(current_preset))"
+  elif [ "$dry_run" = 1 ]; then
+    echo "would write .agent/standards.yml (preset: $preset)"
   else
     cp "$PRESETS/$preset.yml" "$root/.agent/standards.yml"
     echo "wrote   .agent/standards.yml (preset: $preset)"
   fi
-  if [ -f "$root/.agent/standards.md" ]; then
+  if [ "$dry_run" = 1 ] && [ ! -f "$root/.agent/standards.md" ]; then
+    echo "would write .agent/standards.md"
+  elif [ -f "$root/.agent/standards.md" ]; then
     # Never clobber a file a human has filled in. But an untouched copy of an older
     # template is not a decision — it is an empty form, and keeping it means the
     # teammate who runs init today still commits "We store status as: (one of)".
@@ -129,17 +193,58 @@ cmd_init() {
   # exits 3 ("engine is missing"), so the package travels with it. This is the
   # same rule as the install payload: the thing that runs and the thing that is
   # shipped are listed once.
-  cp "$CHECKER" "$root/scripts/check_schema.py"
-  cp "$PRESETS/"*.yml "$root/scripts/presets/"
-  rm -rf "$root/scripts/ironclad_core"
-  cp -R "$IRONCLAD_HOME/ironclad_core" "$root/scripts/ironclad_core"
-  find "$root/scripts/ironclad_core" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
-  chmod +x "$root/scripts/check_schema.py"
-  echo "wrote   scripts/check_schema.py + scripts/presets/ + scripts/ironclad_core/"
+  sync_payload() {
+    # Compare before copying. `cp` always rewrites mtimes, and an `init` that
+    # touches 12 files on every run makes `git status` dirty for no reason — which
+    # is how people learn to ignore its output.
+    local changed=0
+    if ! cmp -s "$CHECKER" "$root/scripts/check_schema.py" 2>/dev/null; then
+      cp "$CHECKER" "$root/scripts/check_schema.py"; changed=1
+      echo "wrote   scripts/check_schema.py"
+    fi
+    for f in "$PRESETS/"*.yml; do
+      local name; name="$(basename "$f")"
+      if ! cmp -s "$f" "$root/scripts/presets/$name" 2>/dev/null; then
+        cp "$f" "$root/scripts/presets/$name"; changed=1
+        echo "wrote   scripts/presets/$name"
+      fi
+    done
+    # The engine is a directory. A version marker tells us whether the copy is
+    # current without diffing every byte: content hash of every .py, sorted.
+    local want have
+    want="$( cd "$IRONCLAD_HOME/ironclad_core" && find . -name '*.py' -type f | sort | xargs sha256sum 2>/dev/null | sha256sum | cut -c1-16 )"
+    have=""
+    [ -f "$root/scripts/ironclad_core/.ironclad-hash" ] && have="$(cat "$root/scripts/ironclad_core/.ironclad-hash")"
+    if [ "$want" != "$have" ]; then
+      rm -rf "$root/scripts/ironclad_core"
+      cp -R "$IRONCLAD_HOME/ironclad_core" "$root/scripts/ironclad_core"
+      find "$root/scripts/ironclad_core" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+      printf '%s' "$want" > "$root/scripts/ironclad_core/.ironclad-hash"
+      changed=1
+      echo "wrote   scripts/ironclad_core/ ($(find "$root/scripts/ironclad_core" -name '*.py' | wc -l) modules)"
+    fi
+    [ "$changed" = 1 ] || echo "kept    scripts/ (already current)"
+    chmod +x "$root/scripts/check_schema.py" 2>/dev/null || true
+  }
+  if [ "$dry_run" = 1 ]; then
+    echo "would sync scripts/check_schema.py + scripts/presets/ + scripts/ironclad_core/"
+  else
+    sync_payload
+  fi
 
   if [ -f "$AGENT_FILES" ] && [ -z "${IRONCLAD_NO_AGENT_FILES:-}" ]; then
     echo
-    python3 "$AGENT_FILES" --project "$root"
+    if [ "$dry_run" = 1 ]; then
+      echo "would attach the standing instruction to AGENTS.md / CLAUDE.md / GEMINI.md / .cursor/rules"
+    else
+      python3 "$AGENT_FILES" --project "$root"
+    fi
+  fi
+
+  if [ "$dry_run" = 1 ]; then
+    echo
+    echo "dry run: nothing was written. Re-run without --dry-run to apply."
+    return 0
   fi
 
   echo
@@ -183,6 +288,12 @@ cmd_status() {
 
 case "${1:-}" in
   check)   shift; cmd_check "$@" ;;
+  # Subcommands the checker owns. They live in Python because they read the same
+  # config layering `check` does — a bash re-implementation would drift, and a
+  # `rules list` that disagrees with the run is worse than no list at all.
+  rules)   shift; cmd_check_sub rules "$@" ;;
+  doctor)  cmd_check_sub doctor "$@" ;;
+  presets) cmd_check_sub presets ;;
   init)    shift; cmd_init "$@" ;;
   preset)  shift; cmd_preset "$@" ;;
   status)  cmd_status ;;
@@ -220,7 +331,9 @@ PY
       python3 "$AGENT_FILES" --project "${1:-.}" "${@:2}"
     fi ;;
   ""|-h|--help|help)
-    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//' ;;
+    # Print the header comment block, however long it has grown. A fixed line
+    # range silently truncated the help the first time a verb was added.
+    awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "$0" ;;
   *)
-    die "unknown command: $1 (try: check | init | preset | status | drill | attach | update)" ;;
+    die "unknown command: $1 (try: check | doctor | rules | presets | init | preset | status | drill | attach | update)" ;;
 esac
