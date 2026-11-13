@@ -2,7 +2,7 @@
 
 **Prinsip urutan:** perbaiki kebohongan dulu, baru bangun di atasnya. Sebuah
 arsitektur baru yang mewarisi dua bug "lulus palsu" hanya menyebarkan bug itu
-ke lima domain.
+ke setiap domain yang menyusul.
 
 Setiap fase punya **gerbang** yang harus lulus sebelum fase berikutnya dimulai.
 
@@ -81,56 +81,85 @@ dijalankan setiap commit.
 
 ---
 
-## Fase 2 — Domain API
+## Fase 2 — Domain API (SELESAI)
 
-**Kenapa kedua:** kontraknya paling jelas (HTTP, OpenAPI) dan paling murah
-diverifikasi.
+**Kenapa kedua:** kontraknya paling jelas (HTTP) dan paling murah diverifikasi.
 
-**Aturan awal (usulan; severity `warn` semua di rilis pertama):**
+**Dikirim:**
 
-| ID | Aturan |
+| ID | Aturan | Keparahan |
+|---|---|---|
+| API-01 | Nama path tidak konsisten gaya (`/users` vs `/getUsers`) | `warn` |
+| API-02 | Error dikirim di bawah status 2xx | `warn` |
+| API-07 | Rute yang sama dideklarasikan dua kali | `error` |
+
+**Tidak dikirim:**
+
+| Usulan | Kenapa |
 |---|---|
-| API-01 | Endpoint tidak konsisten gaya (`/users` vs `/getUsers`) |
-| API-02 | Status code tidak sesuai makna (200 untuk error, 201 tanpa Location) |
-| API-03 | Bentuk respons tidak seragam (`{data}` vs array langsung) |
-| API-04 | Tidak ada versi API saat ada breaking change |
-| API-05 | Input tidak divalidasi sebelum dipakai |
-| API-06 | OpenAPI ada tapi tidak cocok dengan route |
+| API-03 bentuk respons tidak seragam | `{data}` vs array langsung sama-sama lazim; tidak ada yang bisa disebut benar |
+| API-04 versi API saat breaking change | butuh riwayat perilaku, bukan potret kode |
+| API-05 input tidak divalidasi | "divalidasi" tak bisa diputuskan tanpa dataflow |
+| API-06 OpenAPI tidak cocok dengan route | butuh spek nyata di repo; tidak ada di repo uji |
 
-**Gerbang:**
-- [ ] Minimal 3 tanya-jawab nyata: repo contoh dengan pelanggaran API
-- [ ] False positive < 10% pada 3 repo uji
-- [ ] `coverage` jujur: framework yang tidak dikenal → `skipped`, bukan lulus
-
-**Risiko:** sedang. Banyak orang punya "gaya" berbeda; default `warn`.
+**Gerbang:** lulus. 31 pemeriksaan di `tests/test_api_domain.py`, 108 kasus
+perilaku 0.10.2 tidak berubah. Lihat `docs/PHASE2_API_DOMAIN.md`.
 
 ---
 
-## Fase 3 — Domain Security
+## Fase 3 — Domain Security (SELESAI)
 
-**Peringatan:** ini domain yang paling mudah membuat alat dimatikan. Regex pada
-secret menghasilkan false positive pada fixture test dan string contoh.
+**Peringatan:** ini domain yang paling mudah membuat alat dimatikan. Terbukti:
+entropi mentah menghasilkan 1.647 temuan di satu repo. Nama kredensial + entropi +
+lewati placeholder menyisakan 2 — dan **keduanya salah** (nilainya nama kelas PHP
+`Illuminate\...`). Yang akhirnya bekerja adalah bukti, bukan entropi.
 
-**Pekerjaan:**
-- Deteksi secret dengan entropi + allowlist + sadar `.env.example`.
-- Pemeriksaan auth: route tanpa guard, middleware hilang.
-- Pola tidak aman: `eval`, SQL string concat, `md5` untuk password.
+**Dikirim:**
 
-**Gerbang:**
-- [ ] Nol false positive pada repo uji yang punya fixture secret
-- [ ] Setiap temuan punya `remediation` konkret
-- [ ] Redaksi: nilai secret **tidak pernah** dicetak (hanya `sha256` potong)
+| ID | Aturan | Keparahan |
+|---|---|---|
+| SEC-01 | `.env` dilacak git — empat keadaan: dilacak (`error`, rotasi), tidak dilacak & tidak diabaikan (`warn`, satu `git add .` dari bocor), tidak dilacak & diabaikan (diam), tanpa repo (diam) | `error`/`warn` |
+| SEC-02 | Kredensial ditulis sebagai literal di source | `error` di `strict` |
+| SEC-03 | `.env.example` kehilangan variabel yang dipakai kode | `warn` |
+
+**Tidak dikirim:** pemeriksaan auth (route tanpa guard, middleware hilang) dan pola
+tidak aman (`eval`, konkatenasi SQL, `md5` untuk password) — ketiganya butuh
+memahami maksud kode, bukan mencocokkan bentuk.
+
+**Gerbang:** lulus. 29 pemeriksaan (12 negatif), nilai rahasia **tidak pernah**
+dicetak — ada tes yang memastikan nilainya absen dari keluaran. Dua temuan SEC-03
+nyata ditemukan di situs produksi (ucapanin kehilangan 7 variabel termasuk
+`DB_HOST`/`DB_PASSWORD`; silomag kehilangan `VITE_API_URL`) dan **belum
+diperbaiki** karena itu berkas produksi. Lihat `docs/PHASE3_SECURITY_DOMAIN.md`.
 
 ---
 
-## Fase 4 — Architecture & Testing
+## Fase 4 — Architecture (SELESAI), Testing (tidak dikirim)
 
 Paling akhir karena butuh graf dependensi.
 
-| Domain | Aturan awal |
-|---|---|
-| Architecture | ARCH-01 impor melingkar; ARCH-02 lapisan dilanggar (controller → model langsung); ARCH-03 direktori tak dikenal |
-| Testing | TEST-01 test tidak sejajar modul; TEST-02 ambang coverage dari config; TEST-03 test yang selalu skip |
+**Dikirim:**
+
+| ID | Aturan | Keparahan |
+|---|---|---|
+| ARCH-01 | Impor melingkar, dilaporkan per komponen — satu simpul berisi anggotanya, bukan satu temuan per edge | `error` di `strict`, `warn` di preset lain |
+| ARCH-02 | Impor menunjuk berkas yang tidak ada | `warn` |
+
+**Gugur setelah diukur** — ini yang membuat halaman aturan menjanjikan empat
+domain, bukan lima:
+
+| Usulan | Terukur | Putusan |
+|---|---|---|
+| ARCH "controller tidak boleh menyentuh model" | 6 dari 7 controller Laravel nyata melakukannya | ditolak — idiom resmi framework |
+| ARCH-03 "direktori tak dikenal" | menyala di `scripts/`, `docs/`, `public/`, `shared/` | ditolak — tidak ada daftar direktori yang sah |
+| ARCH "berkas terlalu besar" | ambangnya pilihan, bukan fakta | ditolak — selera |
+| TEST-01 "test tidak sejajar modul" | silomag: 15 tes untuk 3 workspace; pemetaan 1:1 tak pernah ada | ditolak |
+| TEST-02 "ambang coverage dari config" | ambang itu pilihan proyek | ditolak |
+| TEST-03 "test yang selalu skip" | nol `.skip` di seluruh repo di mesin ini | ditolak — aturan yang tak pernah menyala tak diketahui bekerja |
+
+**Gerbang:** seluruh perilaku 0.10.2 tidak berubah (108 kasus, 0 exit/0 temuan),
+dan siklus/impor rusak yang ditanam di salinan repo 143 berkas PHP tertangkap
+tanpa temuan lain. Lihat `docs/PHASE4_ARCHITECTURE_DOMAIN.md`.
 
 ---
 
@@ -159,7 +188,9 @@ help yang terpotong.
 
 - Repo `wilsench/ironclad-next`, migrasi riwayat.
 - Rilis ditandai, `release-check.sh` hijau.
-- Dokumentasi ID/EN diperbarui: lima domain, bukan satu.
+- Dokumentasi ID/EN diperbarui: **empat domain yang benar-benar berjalan**, bukan
+  satu, dan bukan lima. Domain testing tidak dikirim karena ketiga aturannya
+  gugur saat diukur (lihat tabel di Fase 4).
 - **Tidak ada push/publish tanpa persetujuan eksplisit.**
 
 ---
