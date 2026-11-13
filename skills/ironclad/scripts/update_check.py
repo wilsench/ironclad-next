@@ -30,7 +30,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-REPO = "wilsench/ironclad"
+REPO = "wilsench/ironclad-next"
 RAW = f"https://raw.githubusercontent.com/{REPO}/main/skills/ironclad/SKILL.md"
 API = f"https://api.github.com/repos/{REPO}"
 TTL = 24 * 3600

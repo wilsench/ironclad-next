@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -180,6 +181,49 @@ def test_docs_match_engine() -> None:
                 ok(f"{lang}/{page} names an architecture rule", "ARCH-0" in text)
 
 
+def test_install_commands_point_at_the_released_repo() -> None:
+    """The one bug that makes a release a lie.
+
+    The tag v0.11.0 lives in wilsench/ironclad-next. Every install command in
+    the README and the docs said wilsench/ironclad — the original repository,
+    whose last tag is v0.9.5. Following the docs produced:
+    `npm error could not determine executable to run`, exit 1.
+    """
+    print("\ninstall commands point at the repo that has the tag")
+    version = (PAYLOAD / "SKILL.md").read_text().split("version:")[1].split("\n")[0].strip()
+
+    sources = [ROOT / "README.md", ROOT / "install.sh", ROOT / "package.json",
+               ROOT / "cli" / "index.mjs", PAYLOAD / "scripts" / "update_check.py",
+               ROOT / "scripts" / "release-check.sh"]
+    sources += sorted((ROOT / "docs" / "pages").rglob("*.md"))
+    sources += [ROOT / "docs" / "build.py"]
+
+    offenders = []
+    for f in sources:
+        if not f.is_file():
+            continue
+        for i, line in enumerate(f.read_text().splitlines(), 1):
+            # `wilsench/ironclad` not followed by `-next`
+            for m in re.finditer(r"wilsench/ironclad(?![\w-])", line):
+                offenders.append(f"{f.relative_to(ROOT)}:{i}: {line.strip()[:90]}")
+    # BASELINE_AUDIT.md is a record of what the original repo was; it is not
+    # an install instruction and must keep the old name.
+    ok("no install command targets the original repo", not offenders,
+       "\n        ".join(offenders[:4]))
+
+    readme = (ROOT / "README.md").read_text()
+    ok("README pins the current version", version in readme, f"want {version}")
+
+    # And the pin must be a tag that exists here, not just a plausible string.
+    r = run(["git", "rev-parse", "-q", "--verify", f"refs/tags/v{version}"], cwd=str(ROOT))
+    ok(f"tag v{version} exists", r.returncode == 0, "README pins a tag that does not exist")
+
+    # The update checker must look at the same repo the installer uses, or it
+    # will report "newer version available" forever, or never.
+    check = (PAYLOAD / "scripts" / "update_check.py").read_text()
+    ok("update checker watches the released repo", "ironclad-next" in check)
+
+
 def test_page_titles_not_stale() -> None:
     print("\npage metadata")
     for lang in ("en", "id"):
@@ -198,6 +242,7 @@ if __name__ == "__main__":
     test_installer_fallback()
     test_release_guard_checks_content()
     test_docs_match_engine()
+    test_install_commands_point_at_the_released_repo()
     test_page_titles_not_stale()
     print(f"\n{passed} passed, {failed} failed")
     sys.exit(1 if failed else 0)

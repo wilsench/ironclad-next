@@ -278,7 +278,7 @@ LAYOUT = """<!doctype html>
     </nav>
 
     <div class="sidefoot">
-      <a href="https://github.com/wilsench/ironclad">GitHub</a>
+      <a href="https://github.com/wilsench/ironclad-next">GitHub</a>
       <a href="https://wilsench.my.id/">wilsench.my.id</a>
     </div>
   </aside>

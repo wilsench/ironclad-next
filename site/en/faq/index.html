@@ -66,7 +66,7 @@
     </nav>
 
     <div class="sidefoot">
-      <a href="https://github.com/wilsench/ironclad">GitHub</a>
+      <a href="https://github.com/wilsench/ironclad-next">GitHub</a>
       <a href="https://wilsench.my.id/">wilsench.my.id</a>
     </div>
   </aside>
@@ -106,7 +106,7 @@ decides, the same way it decides which tool to call.</p>
 <p>If you want certainty, name it: "use the ironclad skill for this migration".</p>
 <h2 id="can-it-be-shorter-than-this">Can it be shorter than this?</h2>
 <p>Install:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0
 </code></pre></div>
 <p>Then, in a repo:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad check      # look
@@ -118,16 +118,16 @@ the rules pinned in git for your team.</p>
 <p>Yes — that is its main target. Six targets: Hermes, Claude Code, Codex, Cursor,
 opencode, Antigravity. The format is the Agent Skills standard (<code>SKILL.md</code>), not
 something Hermes-specific.</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0  --all              # everything detected on this machine
-npx github:wilsench/ironclad#v0.11.0  --target claude
-npx github:wilsench/ironclad#v0.11.0  --target gemini    # Antigravity, global
-npx github:wilsench/ironclad#v0.11.0  --target opencode
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0  --all              # everything detected on this machine
+npx github:wilsench/ironclad-next#v0.11.0  --target claude
+npx github:wilsench/ironclad-next#v0.11.0  --target gemini    # Antigravity, global
+npx github:wilsench/ironclad-next#v0.11.0  --target opencode
 </code></pre></div>
-<h2 id="can-i-use-wilsenchironclad-directly">Can I use <code>wilsench/ironclad</code> directly?</h2>
+<h2 id="can-i-use-wilsenchironclad-next-directly">Can I use <code>wilsench/ironclad-next</code> directly?</h2>
 <p>For Hermes:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">hermes skills install wilsench/ironclad/skills/ironclad
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">hermes skills install wilsench/ironclad-next/skills/ironclad
 </code></pre></div>
-<p>Other agents use <code>npx github:wilsench/ironclad#v0.11.0</code> — that pulls the package
+<p>Other agents use <code>npx github:wilsench/ironclad-next#v0.11.0</code> — that pulls the package
 straight from the public repo, with nothing published to npm. If the machine has no
 Node, the <code>install.sh</code> mirror on <code>wilsench.my.id</code> runs the same code.</p>
 <h2 id="is-curl-bash-safe">Is <code>curl | bash</code> safe?</h2>
@@ -192,14 +192,14 @@ is too much, remove it with <code>--uninstall</code>; the skill and the tooling 
 invoke them by hand.</p>
 <h2 id="i-do-not-agree-that-enums-are-wrong-can-i-still-use-this">I do not agree that enums are wrong. Can I still use this?</h2>
 <p>Yes — preset <code>coherence</code>:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 check . --preset coherence
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 check . --preset coherence
 </code></pre></div>
 <p>Under that preset no style is punished: <code>enum</code>, a coded text column, and integer +
 lookup are all acceptable. Only one thing fails — the same concept stored two different
 ways in one project. That is the entire thesis; the rest is taste, and your taste does
 not have to match anyone else's.</p>
 <h2 id="can-i-try-it-without-installing">Can I try it without installing?</h2>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 check .
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 check .
 </code></pre></div>
 <p>That runs the checker and exits. No files written, no agent config touched. If it comes
 back clean, your repo is already coherent — and you do not need to install anything.</p>
@@ -219,7 +219,7 @@ back clean, your repo is already coherent — and you do not need to install any
 <li class="lvl2"><a href="#does-the-skill-activate-automatically-on-every-agent-run">Does the skill activate automatically on every agent run?</a></li>
 <li class="lvl2"><a href="#can-it-be-shorter-than-this">Can it be shorter than this?</a></li>
 <li class="lvl2"><a href="#does-the-installer-work-for-agents-other-than-hermes">Does the installer work for agents other than Hermes?</a></li>
-<li class="lvl2"><a href="#can-i-use-wilsenchironclad-directly">Can I use wilsench/ironclad directly?</a></li>
+<li class="lvl2"><a href="#can-i-use-wilsenchironclad-next-directly">Can I use wilsench/ironclad-next directly?</a></li>
 <li class="lvl2"><a href="#is-curl-bash-safe">Is curl | bash safe?</a></li>
 <li class="lvl2"><a href="#does-it-work-without-git">Does it work without git?</a></li>
 <li class="lvl2"><a href="#why-not-just-use-enum">Why not just use enum?</a></li>

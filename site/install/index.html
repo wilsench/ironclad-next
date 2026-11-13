@@ -66,7 +66,7 @@
     </nav>
 
     <div class="sidefoot">
-      <a href="https://github.com/wilsench/ironclad">GitHub</a>
+      <a href="https://github.com/wilsench/ironclad-next">GitHub</a>
       <a href="https://wilsench.my.id/">wilsench.my.id</a>
     </div>
   </aside>
@@ -86,7 +86,7 @@
     <div class="pagegrid">
       <article class="prose">
         <h1 id="pasang-di-agent-kamu">Pasang di agent kamu</h1>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0
 </code></pre></div>
 <p>Atau, kalau lebih suka tanpa Node:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">curl -fsSL https://wilsench.my.id/ironclad/install.sh | bash
@@ -95,8 +95,8 @@
 ada langkah kedua.</p>
 <h2 id="pilih-mode-ask-atau-house">Pilih mode: <code>ask</code> atau <code>house</code></h2>
 <p>Mode menentukan apa yang terjadi kalau repo <strong>belum punya</strong> cara menyimpan status.</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0                          # = --mode ask
-npx github:wilsench/ironclad#v0.11.0 --mode house             # default rumah
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0                          # = --mode ask
+npx github:wilsench/ironclad-next#v0.11.0 --mode house             # default rumah
 </code></pre></div>
 <ul>
 <li><strong><code>ask</code></strong> (default) — ikuti repo; kalau belum ada, <strong>tanya</strong> mau gaya apa. Tidak
@@ -143,19 +143,19 @@ berhenti dengan exit 3 dan memberi perintah pemasangannya — bukan mencetak
 <h2 id="agent-lain">Agent lain</h2>
 <p>Default-nya <code>~/.agents/skills</code>. Untuk agent yang punya folder sendiri:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash"># Claude Code
-npx github:wilsench/ironclad#v0.11.0 --target claude
+npx github:wilsench/ironclad-next#v0.11.0 --target claude
 
 # Hermes
-npx github:wilsench/ironclad#v0.11.0 --target hermes
+npx github:wilsench/ironclad-next#v0.11.0 --target hermes
 
 # opencode (native)
-npx github:wilsench/ironclad#v0.11.0 --target opencode
+npx github:wilsench/ironclad-next#v0.11.0 --target opencode
 
 # Antigravity global
-npx github:wilsench/ironclad#v0.11.0 --target gemini
+npx github:wilsench/ironclad-next#v0.11.0 --target gemini
 
 # semua yang terpasang di mesin ini
-npx github:wilsench/ironclad#v0.11.0 --all
+npx github:wilsench/ironclad-next#v0.11.0 --all
 </code></pre></div>
 <div class="tablewrap"><table>
 <thead>
@@ -194,26 +194,26 @@ npx github:wilsench/ironclad#v0.11.0 --all
 <blockquote>
 <p><strong>Codex tidak punya folder skill global.</strong> Menurut dokumentasi OpenAI, Codex membaca <code>$CWD/.agents/skills</code> dan <code>$CWD/../.agents/skills</code>. Kalau kamu pengguna Codex, pasang di dalam repo supaya ikut commit:</p>
 <p><code>bash
-npx github:wilsench/ironclad#v0.11.0 --dir .agents/skills</code></p>
+npx github:wilsench/ironclad-next#v0.11.0 --dir .agents/skills</code></p>
 </blockquote>
 <h2 id="kalau-ingin-aturannya-ikut-repo">Kalau ingin aturannya ikut repo</h2>
 <p>Ini yang membuat satu tim memakai aturan yang sama — skill ikut git, bukan cuma ada di laptop satu orang:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 --dir .agents/skills
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --dir .agents/skills
 git add .agents/skills/ironclad &amp;&amp; git commit -m &quot;chore: add ironclad skill&quot;
 </code></pre></div>
 <h2 id="ci-lewati-semua-pertanyaan">CI: lewati semua pertanyaan</h2>
 <p>Tidak ada pertanyaan sejak awal, jadi tidak ada yang perlu dilewati. Untuk pipeline yang ingin semuanya sekaligus:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 --target agents --project . --preset legacy-friendly
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --target agents --project . --preset legacy-friendly
 </code></pre></div>
 <h2 id="mencopot">Mencopot</h2>
 <p>Ada dua hal yang bisa dicopot, dan keduanya berbeda pemiliknya. Pahami ini dulu supaya tidak menghapus aturan tim hanya karena ingin mencoba ulang.</p>
 <p><strong>1. Skill-nya</strong> — ada di folder agent kamu, bukan di repo. Satu perintah, membersihkan semua agent sekaligus:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 --uninstall
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --uninstall
 </code></pre></div>
 <p>Yang dihapus: <code>~/.agents/skills/ironclad</code>, <code>~/.claude/skills/ironclad</code>, <code>~/.hermes/skills/ironclad</code>, <code>~/.gemini/config/skills/ironclad</code>, <code>~/.config/opencode/skills/ironclad</code>, dan perintah <code>~/.local/bin/ironclad</code>. Yang tidak ada akan dilewati, bukan error.</p>
 <p><strong>2. Aturan proyek</strong> — <code>.agent/standards.{md,yml}</code>, <code>scripts/check_schema.py</code>, <code>scripts/presets/</code>. Ini <strong>keputusan repo</strong>, bukan milik installer, jadi secara default ia dibiarkan. Kalau memang mau dibuang dari disk:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">cd repo-kamu
-npx github:wilsench/ironclad#v0.11.0 --uninstall --purge
+npx github:wilsench/ironclad-next#v0.11.0 --uninstall --purge
 </code></pre></div>
 <p>Kalau berkas itu sudah pernah di-commit, purge hanya menghapus dari disk — Git masih melacaknya. Selesaikan dengan commit:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">git rm -r .agent scripts

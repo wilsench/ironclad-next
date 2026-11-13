@@ -23,7 +23,7 @@ understanding, the install is enough.
 ## Install
 
 ```bash
-npx github:wilsench/ironclad#v0.11.0
+npx github:wilsench/ironclad-next#v0.11.0
 ```
 
 Same installer without Node:
@@ -66,7 +66,7 @@ folder works in Hermes, Claude Code, Codex, Cursor, opencode, and Antigravity.
 Hermes users can also install through the hub:
 
 ```bash
-hermes skills install wilsench/ironclad/skills/ironclad
+hermes skills install wilsench/ironclad-next/skills/ironclad
 ```
 
 ## Optional: the checker

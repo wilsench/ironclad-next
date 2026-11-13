@@ -99,4 +99,4 @@ if [ "$fail" -ne 0 ]; then
   echo "NOT READY TO RELEASE."
   exit 1
 fi
-echo "Release state agrees everywhere. Safe to hand out: npx github:wilsench/ironclad#$WANT"
+echo "Release state agrees everywhere. Safe to hand out: npx github:wilsench/ironclad-next#$WANT"

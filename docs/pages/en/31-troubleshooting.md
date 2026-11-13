@@ -140,7 +140,7 @@ It does not read stdin — by design, there is nothing to answer. If you passed
 flags and they were ignored, they must come after `-s --`:
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}} --target claude
+npx github:wilsench/ironclad-next#v{{VERSION}} --target claude
 ```
 
 Without `-s --`, the arguments go to `bash` itself, which ignores them.
@@ -148,8 +148,8 @@ Without `-s --`, the arguments go to `bash` itself, which ignores them.
 ## Behind a proxy, or the mirror is unreachable
 
 ```bash
-IRONCLAD_BASE=https://raw.githubusercontent.com/wilsench/ironclad/main/skills/ironclad \
-  npx github:wilsench/ironclad#v{{VERSION}}
+IRONCLAD_BASE=https://raw.githubusercontent.com/wilsench/ironclad-next/main/skills/ironclad \
+  npx github:wilsench/ironclad-next#v{{VERSION}}
 ```
 
 `IRONCLAD_BASE` overrides the payload source entirely. Use it for an internal
@@ -157,7 +157,7 @@ mirror — the file list is fixed and printed in the installer's `FILES` variabl
 
 ## Nothing here matches
 
-Open an issue at <https://github.com/wilsench/ironclad/issues> with:
+Open an issue at <https://github.com/wilsench/ironclad-next/issues> with:
 
 - the command you ran
 - the exact output (exit code included)
@@ -175,7 +175,7 @@ ironclad version
 If that is not the version you meant to install:
 
 ```bash
-npx --yes github:wilsench/ironclad#v{{VERSION}} --force
+npx --yes github:wilsench/ironclad-next#v{{VERSION}} --force
 ```
 
 `--force` makes the installer overwrite the existing payload. If it is still stale,

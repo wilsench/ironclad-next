@@ -22,7 +22,7 @@
 #   --project PATH       bootstrap policy + checker into that repo, then exit
 #   --preset NAME        balanced (default) | strict | legacy-friendly
 #   --policy-only        with --project: write .agent/ only, skip the checker
-#   --repo OWNER/REPO    payload repo (default: wilsench/ironclad)
+#   --repo OWNER/REPO    payload repo (default: wilsench/ironclad-next)
 #   --ref REF            git branch or tag (default: main)
 #   --uninstall          remove the skill from every agent dir + the launcher
 #   --purge              with --uninstall: also delete this project's .agent/ and
@@ -39,7 +39,7 @@
 set -euo pipefail
 
 SKILL_NAME="ironclad"
-REPO="${REPO:-wilsench/ironclad}"
+REPO="${REPO:-wilsench/ironclad-next}"
 REF="${REF:-main}"
 TARGET="agents"
 DEST=""

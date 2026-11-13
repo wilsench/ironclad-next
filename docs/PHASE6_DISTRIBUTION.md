@@ -11,7 +11,7 @@ Sebelum menulis satu baris untuk fase ini, `bash scripts/release-check.sh`
 dijalankan. Hasilnya:
 
 ```
-Release state agrees everywhere. Safe to hand out: npx github:wilsench/ironclad#v0.10.2
+Release state agrees everywhere. Safe to hand out: npx github:wilsench/ironclad-next#v0.10.2
 exit 0
 ```
 

@@ -9,7 +9,7 @@ summary: One command, no questions. The agent starts asking on its own — no se
 # Install into your agent
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}}
+npx github:wilsench/ironclad-next#v{{VERSION}}
 ```
 
 Or, if you would rather not use Node:
@@ -25,8 +25,8 @@ Both run the same installer. No questions, no menu, no second step.
 The mode decides what happens when a repo has **no** status storage yet.
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}}                          # = --mode ask
-npx github:wilsench/ironclad#v{{VERSION}} --mode house             # house default
+npx github:wilsench/ironclad-next#v{{VERSION}}                          # = --mode ask
+npx github:wilsench/ironclad-next#v{{VERSION}} --mode house             # house default
 ```
 
 - **`ask`** (default) — follow the repo; if nothing exists, **ask** which style. It
@@ -94,19 +94,19 @@ The default is `~/.agents/skills`. For agents with their own directory:
 
 ```bash
 # Claude Code
-npx github:wilsench/ironclad#v{{VERSION}} --target claude
+npx github:wilsench/ironclad-next#v{{VERSION}} --target claude
 
 # Hermes
-npx github:wilsench/ironclad#v{{VERSION}} --target hermes
+npx github:wilsench/ironclad-next#v{{VERSION}} --target hermes
 
 # opencode (native)
-npx github:wilsench/ironclad#v{{VERSION}} --target opencode
+npx github:wilsench/ironclad-next#v{{VERSION}} --target opencode
 
 # Antigravity, global
-npx github:wilsench/ironclad#v{{VERSION}} --target gemini
+npx github:wilsench/ironclad-next#v{{VERSION}} --target gemini
 
 # everything installed on this machine
-npx github:wilsench/ironclad#v{{VERSION}} --all
+npx github:wilsench/ironclad-next#v{{VERSION}} --all
 ```
 
 | Agent | Directory |
@@ -123,7 +123,7 @@ npx github:wilsench/ironclad#v{{VERSION}} --all
 > inside the repo so it travels with the code:
 >
 > ```bash
-> npx github:wilsench/ironclad#v{{VERSION}} --dir .agents/skills
+> npx github:wilsench/ironclad-next#v{{VERSION}} --dir .agents/skills
 > ```
 
 ## If you want the rules to travel with the repo
@@ -132,7 +132,7 @@ This is what makes a whole team use the same rulebook — the skill is in git, n
 only on one person's laptop:
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}} --dir .agents/skills
+npx github:wilsench/ironclad-next#v{{VERSION}} --dir .agents/skills
 git add .agents/skills/ironclad && git commit -m "chore: add ironclad skill"
 ```
 
@@ -142,7 +142,7 @@ There are no prompts in the first place, so there is nothing to suppress. For a
 pipeline that wants everything at once:
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}} --target agents --project . --preset legacy-friendly
+npx github:wilsench/ironclad-next#v{{VERSION}} --target agents --project . --preset legacy-friendly
 ```
 
 ## Uninstall
@@ -155,7 +155,7 @@ install.
 sweeps every agent:
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}} --uninstall
+npx github:wilsench/ironclad-next#v{{VERSION}} --uninstall
 ```
 
 Removes `~/.agents/skills/ironclad`, `~/.claude/skills/ironclad`,
@@ -169,7 +169,7 @@ installer artefact, so it is left alone by default. To remove it from disk too:
 
 ```bash
 cd your-repo
-npx github:wilsench/ironclad#v{{VERSION}} --uninstall --purge
+npx github:wilsench/ironclad-next#v{{VERSION}} --uninstall --purge
 ```
 
 If those files were committed, purge only clears the disk — Git still tracks them:

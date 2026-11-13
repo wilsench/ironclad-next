@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Entry point for `npx github:wilsench/ironclad`.
+// Entry point for `npx github:wilsench/ironclad-next`.
 //
 // Node is only a delivery mechanism here — npm runs this file, which locates the
 // bash installer that already sits next to it in the package and hands over. All
@@ -31,7 +31,7 @@ if (hasBash.error || hasBash.status !== 0) {
 const argv = process.argv.slice(2);
 
 // Read-only subcommands. This is the front door for someone who does not want to
-// install anything yet: `npx github:wilsench/ironclad check .` answers "does this repo
+// install anything yet: `npx github:wilsench/ironclad-next check .` answers "does this repo
 // already store status two ways" and exits, without touching a single agent config.
 // Without it, the only way to try the tool was to install it first — backwards.
 if (argv[0] === "check" || argv[0] === "scan") {

@@ -66,7 +66,7 @@
     </nav>
 
     <div class="sidefoot">
-      <a href="https://github.com/wilsench/ironclad">GitHub</a>
+      <a href="https://github.com/wilsench/ironclad-next">GitHub</a>
       <a href="https://wilsench.my.id/">wilsench.my.id</a>
     </div>
   </aside>
@@ -167,17 +167,17 @@ which one with <code>ironclad rules</code>, and see <em>Score got worse after ad
 <h2 id="curl-bash-seems-to-ignore-my-input"><code>curl … | bash</code> seems to ignore my input</h2>
 <p>It does not read stdin — by design, there is nothing to answer. If you passed
 flags and they were ignored, they must come after <code>-s --</code>:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 --target claude
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --target claude
 </code></pre></div>
 <p>Without <code>-s --</code>, the arguments go to <code>bash</code> itself, which ignores them.</p>
 <h2 id="behind-a-proxy-or-the-mirror-is-unreachable">Behind a proxy, or the mirror is unreachable</h2>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">IRONCLAD_BASE=https://raw.githubusercontent.com/wilsench/ironclad/main/skills/ironclad \
-  npx github:wilsench/ironclad#v0.11.0
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">IRONCLAD_BASE=https://raw.githubusercontent.com/wilsench/ironclad-next/main/skills/ironclad \
+  npx github:wilsench/ironclad-next#v0.11.0
 </code></pre></div>
 <p><code>IRONCLAD_BASE</code> overrides the payload source entirely. Use it for an internal
 mirror — the file list is fixed and printed in the installer's <code>FILES</code> variable.</p>
 <h2 id="nothing-here-matches">Nothing here matches</h2>
-<p>Open an issue at <a href="https://github.com/wilsench/ironclad/issues">https://github.com/wilsench/ironclad/issues</a> with:</p>
+<p>Open an issue at <a href="https://github.com/wilsench/ironclad-next/issues">https://github.com/wilsench/ironclad-next/issues</a> with:</p>
 <ul>
 <li>the command you ran</li>
 <li>the exact output (exit code included)</li>
@@ -189,7 +189,7 @@ mirror — the file list is fixed and printed in the installer's <code>FILES</co
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad version
 </code></pre></div>
 <p>If that is not the version you meant to install:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx --yes github:wilsench/ironclad#v0.11.0 --force
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx --yes github:wilsench/ironclad-next#v0.11.0 --force
 </code></pre></div>
 <p><code>--force</code> makes the installer overwrite the existing payload. If it is still stale,
 clear the npm cache: <code>npm cache clean --force</code>.</p>

@@ -29,11 +29,11 @@ COUNT=0
 
 for f in $FILES; do
   [ -f "$f" ] || continue
-  hits=$(grep -c '<owner>\|wilsench/ironclad' "$f" || true)
+  hits=$(grep -c '<owner>\|wilsench/ironclad-next' "$f" || true)
   [ "$hits" = "0" ] && continue
   if [ -n "$DRY" ]; then
     echo "$f: $hits hit(s)"
-    grep -n '<owner>\|wilsench/ironclad' "$f" | sed 's/^/    /'
+    grep -n '<owner>\|wilsench/ironclad-next' "$f" | sed 's/^/    /'
   else
     sed -i \
       -e "s|<owner>/ironclad|${OWNER}/ironclad|g" \

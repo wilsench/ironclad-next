@@ -66,7 +66,7 @@
     </nav>
 
     <div class="sidefoot">
-      <a href="https://github.com/wilsench/ironclad">GitHub</a>
+      <a href="https://github.com/wilsench/ironclad-next">GitHub</a>
       <a href="https://wilsench.my.id/">wilsench.my.id</a>
     </div>
   </aside>
@@ -96,7 +96,7 @@
 <p>Kalau kamu ingin memastikan, sebut namanya: <code>pakai skill ironclad</code>.</p>
 <h2 id="kalau-tidak-mau-sepanjang-ini-cukup-satu-perintah">Kalau tidak mau sepanjang ini, cukup satu perintah?</h2>
 <p>Ya:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0
 </code></pre></div>
 <p>Itu saja. Tidak ada langkah kedua — agent sudah bertanya sendiri di repo mana pun.</p>
 <p>Kalau kamu ingin aturannya ikut git supaya seluruh tim dan CI memakai jawaban yang sama:</p>
@@ -105,16 +105,16 @@
 <p>Satu perintah, tanpa clone, tanpa baca dokumen — dan tanpa <code>ironclad init</code> kecuali kamu ingin aturannya ikut git.</p>
 <h2 id="installer-ini-bisa-untuk-selain-hermes">Installer ini bisa untuk selain Hermes?</h2>
 <p>Ya, dan itu target utamanya. Enam target: Hermes, Claude Code, Codex, Cursor, opencode, Antigravity. Formatnya standar Agent Skills (<code>SKILL.md</code>), bukan format khusus Hermes.</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0  --all              # semua agent yang terdeteksi
-npx github:wilsench/ironclad#v0.11.0  --target claude
-npx github:wilsench/ironclad#v0.11.0  --target gemini    # Antigravity global
-npx github:wilsench/ironclad#v0.11.0  --target opencode
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0  --all              # semua agent yang terdeteksi
+npx github:wilsench/ironclad-next#v0.11.0  --target claude
+npx github:wilsench/ironclad-next#v0.11.0  --target gemini    # Antigravity global
+npx github:wilsench/ironclad-next#v0.11.0  --target opencode
 </code></pre></div>
-<h2 id="bisa-langsung-pakai-wilsenchironclad">Bisa langsung pakai <code>wilsench/ironclad</code>?</h2>
+<h2 id="bisa-langsung-pakai-wilsenchironclad-next">Bisa langsung pakai <code>wilsench/ironclad-next</code>?</h2>
 <p>Untuk Hermes, ya — begitu repo GitHub-nya terbit:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">hermes skills install wilsench/ironclad/skills/ironclad
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">hermes skills install wilsench/ironclad-next/skills/ironclad
 </code></pre></div>
-<p>Untuk agent lain, pakai <code>npx github:wilsench/ironclad#v0.11.0</code> — itu menarik paket langsung dari repo GitHub tanpa publish ke npm. Kalau tidak ada Node, mirror <code>install.sh</code> di <code>wilsench.my.id</code> menjalankan kode yang sama persis.</p>
+<p>Untuk agent lain, pakai <code>npx github:wilsench/ironclad-next#v0.11.0</code> — itu menarik paket langsung dari repo GitHub tanpa publish ke npm. Kalau tidak ada Node, mirror <code>install.sh</code> di <code>wilsench.my.id</code> menjalankan kode yang sama persis.</p>
 <h2 id="apakah-curl-bash-aman">Apakah <code>curl | bash</code> aman?</h2>
 <p>Installer-nya 180 baris bash dan bisa kamu baca dulu:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">curl -fsSL https://wilsench.my.id/ironclad/install.sh | less
@@ -158,14 +158,14 @@ mengganggu, lepas dengan <code>--uninstall</code>; skill dan alat lainnya tetap 
 manual.</p>
 <h2 id="saya-tidak-setuju-enum-dianggap-salah-masih-bisa-pakai">Saya tidak setuju enum dianggap salah. Masih bisa pakai?</h2>
 <p>Bisa. Pakai preset <code>coherence</code>:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 check . --preset coherence
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 check . --preset coherence
 </code></pre></div>
 <p>Di preset itu tidak ada gaya yang dihukum: <code>enum</code>, teks berkode, dan integer + lookup
 semuanya diterima. Yang <strong>gagal</strong> hanya satu hal — konsep yang sama disimpan dua cara
 berbeda dalam satu proyek. Itu satu-satunya tesis Ironclad; sisanya selera, dan selera
 kamu tidak perlu sama dengan siapa pun.</p>
 <h2 id="bisa-coba-tanpa-install">Bisa coba tanpa install?</h2>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 check .
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 check .
 </code></pre></div>
 <p>Itu menjalankan pemeriksa dan berhenti. Tidak ada file yang ditulis, tidak ada
 konfigurasi agent yang disentuh. Kalau hasilnya bersih, berarti repo-mu memang konsisten
@@ -186,7 +186,7 @@ konfigurasi agent yang disentuh. Kalau hasilnya bersih, berarti repo-mu memang k
 <li class="lvl2"><a href="#apakah-skill-aktif-otomatis-setiap-kali-agent-jalan">Apakah skill aktif otomatis setiap kali agent jalan?</a></li>
 <li class="lvl2"><a href="#kalau-tidak-mau-sepanjang-ini-cukup-satu-perintah">Kalau tidak mau sepanjang ini, cukup satu perintah?</a></li>
 <li class="lvl2"><a href="#installer-ini-bisa-untuk-selain-hermes">Installer ini bisa untuk selain Hermes?</a></li>
-<li class="lvl2"><a href="#bisa-langsung-pakai-wilsenchironclad">Bisa langsung pakai wilsench/ironclad?</a></li>
+<li class="lvl2"><a href="#bisa-langsung-pakai-wilsenchironclad-next">Bisa langsung pakai wilsench/ironclad-next?</a></li>
 <li class="lvl2"><a href="#apakah-curl-bash-aman">Apakah curl | bash aman?</a></li>
 <li class="lvl2"><a href="#apakah-bisa-dipakai-tanpa-git">Apakah bisa dipakai tanpa Git?</a></li>
 <li class="lvl2"><a href="#kenapa-tidak-pakai-enum-saja">Kenapa tidak pakai enum saja?</a></li>

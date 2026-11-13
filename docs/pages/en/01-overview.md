@@ -99,7 +99,7 @@ office had.
 ## Try it without installing
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}} check .
+npx github:wilsench/ironclad-next#v{{VERSION}} check .
 ```
 
 Runs the checker, prints findings, exits. **No files written, no agent config
@@ -109,7 +109,7 @@ need to install anything.
 If you want the neutral reading — the one that does not consider enums a defect:
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}} check . --preset coherence
+npx github:wilsench/ironclad-next#v{{VERSION}} check . --preset coherence
 ```
 
 ## If you are not the one writing the code

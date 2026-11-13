@@ -63,7 +63,7 @@ python3 scripts/check_schema.py --list-presets   # kalau kosong, ini penyebabnya
 **Perbaikan:**
 
 ```bash
-npx github:wilsench/ironclad#v{{VERSION}} --project . --preset balanced
+npx github:wilsench/ironclad-next#v{{VERSION}} --project . --preset balanced
 ```
 
 ## `no files any rule can read found`
@@ -167,7 +167,7 @@ Installer mencoba GitHub lebih dulu, lalu mirror. Kalau keduanya gagal, biasanya
 
 ```bash
 curl -sI https://wilsench.my.id/ironclad/pkg/SKILL.md | head -1
-curl -sI https://raw.githubusercontent.com/wilsench/ironclad/main/skills/ironclad/SKILL.md | head -1
+curl -sI https://raw.githubusercontent.com/wilsench/ironclad-next/main/skills/ironclad/SKILL.md | head -1
 ```
 
 Salah satu harus `200`. Kalau mirror 200 tapi installer tetap gagal, paksa lewat mirror:
@@ -200,7 +200,7 @@ ironclad version
 Kalau angkanya bukan versi yang kamu tuju:
 
 ```bash
-npx --yes github:wilsench/ironclad#v{{VERSION}} --force
+npx --yes github:wilsench/ironclad-next#v{{VERSION}} --force
 ```
 
 `--force` membuat installer menimpa payload yang ada. Kalau masih lama, bersihkan
