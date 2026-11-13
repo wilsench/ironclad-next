@@ -19,7 +19,13 @@ import re
 from pathlib import Path
 
 SKIP_DIRS = {".git", "node_modules", "vendor", "dist", "build", ".next",
-             "storage", "__pycache__", ".venv", "venv", ".terraform", "coverage"}
+             "storage", "__pycache__", ".venv", "venv", ".terraform", "coverage",
+             # Ironclad's own payload. `init` copies the engine into scripts/,
+             # and the engine's comments and docstrings contain the exact shapes
+             # the rules hunt for ("res.status(200) with an error payload") — so
+             # every repo that adopted the tool reported its own vendor copy as a
+             # violation. Checking a copy of the checker is never useful.
+             "ironclad_core"}
 
 # Stacks whose files are schema we cannot parse yet. Kept here rather than in the
 # database domain because these are all schema-ish file types, and the warning is

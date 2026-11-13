@@ -290,6 +290,30 @@ def test_release_never_mounts_over_the_stable_url() -> None:
     ok("no page links to the old docs path", not offenders, str(offenders[:4]))
 
 
+def test_adopted_repo_does_not_check_the_payload() -> None:
+    """`init` copies the engine in. The engine must not then be audited as user code.
+
+    Found on portfolio.ucapin.my.id: a repo with 0 findings reported 2 after
+    `init`, both from ironclad_core/domains/api.py — the rule's own docstring
+    example ("res.status(200) with an error payload") was being read as a
+    violation. Every project that adopts the tool would inherit that noise.
+    """
+    print("\nadopted payload")
+    import subprocess
+
+    engine = ROOT / "skills" / "ironclad"
+    discard = (ROOT / "skills" / "ironclad" / "ironclad_core" / "discovery.py").read_text()
+
+    # The skip list is the mechanism; assert on it directly so this test does not
+    # depend on running init into a temp dir.
+    ok("engine dir is skipped by discovery",
+       "ironclad_core" in re.search(r"SKIP_DIRS = \{([^}]*)\}", discard, re.S).group(1),
+       "a repo that ran init will audit its own copy of the checker")
+    ok("skip list still ignores vendored deps",
+       all(d in discard for d in (".git", "node_modules", "vendor")),
+       "dropping the usual ignores would flood every repo")
+
+
 def test_page_titles_not_stale() -> None:
     print("\npage metadata")
     for lang in ("en", "id"):
@@ -312,5 +336,6 @@ if __name__ == "__main__":
     test_docs_claims_about_presets_are_true()
     test_release_never_mounts_over_the_stable_url()
     test_page_titles_not_stale()
+    test_adopted_repo_does_not_check_the_payload()
     print(f"\n{passed} passed, {failed} failed")
     sys.exit(1 if failed else 0)

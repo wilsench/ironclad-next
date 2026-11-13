@@ -252,7 +252,7 @@ print(p + '|' + why)
   echo "  git add .agent scripts AGENTS.md && git commit -m 'chore: adopt ironclad standards'"
   echo
   echo "Then, in CI, gate only the files a PR touches — see"
-  echo "https://wilsench.my.id/ironclad/ci/"
+  echo "https://wilsench.my.id/ironclad-next/ci/"
 }
 
 cmd_preset() {

@@ -41,16 +41,30 @@ ENUM_PATTERNS = [
 # makes people switch a linter off.
 HTTP_RECEIVER = re.compile(r"(?:\bres(?:ponse)?|r|xhr|request|req)\s*\.\s*_*$", re.I)
 
+# A column *declaration* carries a length, not a status value: `string('tipe', 40)`
+# and `char('state', 2)` are dimensions. Matching those made DB-02 fire on every
+# sized column named status/type/tipe — the most common shape in Laravel.
+# It must name the schema builder: `where('status', 2)` also ends in `)` and the
+# 2 there *is* a status code.
+COLUMN_LENGTH = re.compile(
+    rf"->\s*(?:string|char|varchar|text|enum)\s*\(\s*['\"][a-z0-9_]*{STATUS_WORD}"
+    rf"[a-z0-9_]*['\"]\s*,\s*'?\d+'?\s*\)", re.I)
+
 MAGIC_COMPARE = re.compile(
     rf"({STATUS_WORD}[a-zA-Z0-9_]*)\s*(?:===?|!==?|<>|==|!=)\s*'?\d+'?", re.I)
 MAGIC_WHERE = re.compile(
     rf"['\"]([a-z0-9_]*{STATUS_WORD}[a-z0-9_]*)['\"]\s*,\s*'?\d+'?", re.I)
 MAGIC_ASSIGN = re.compile(rf"(\$?\w*{STATUS_WORD}\w*)\s*=\s*'?[0-9]'?\s*;", re.I)
 
+# DB-04 is about lifecycle state stored as human labels ('In Stock', 'in stock ').
+# A classification column (`tipe` = hero/tentang/proyek) is a discriminant, not a
+# status: text is a normal choice there, and smallint would not be an improvement.
+LIFECYCLE_WORD = _LEAD + r"(?:status|state|stage|kondisi|keberangkatan|ketersediaan)"
+
 VARCHAR_STATUS = re.compile(
-    rf"['\"]?([a-z0-9_]*{STATUS_WORD}[a-z0-9_]*)['\"]?\s+(?:varchar|string|text)", re.I)
+    rf"['\"]?([a-z0-9_]*{LIFECYCLE_WORD}[a-z0-9_]*)['\"]?\s+(?:varchar|string|text)", re.I)
 LARAVEL_STRING_STATUS = re.compile(
-    rf"\$\w+\s*->\s*(?:string|text)\s*\(\s*['\"]([a-z0-9_]*{STATUS_WORD}[a-z0-9_]*)['\"]",
+    rf"\$\w+\s*->\s*(?:string|text)\s*\(\s*['\"]([a-z0-9_]*{LIFECYCLE_WORD}[a-z0-9_]*)['\"]",
     re.I)
 
 BOOL_NAMES = re.compile(r"\b(is|has|should|can)_(?:status|state|kondisi|tipe|type|kategori)\b", re.I)
@@ -141,6 +155,10 @@ class Db02MagicNumber(Rule):
                     break
                 if not (m and (migration or kind != "assignment")):
                     continue
+                # `string('tipe', 40)` declares a width. The 40 is bytes, not a
+                # status code, and flagging it is noise on every sized column.
+                if COLUMN_LENGTH.search(line):
+                    break
                 name = m.group(1) if m.groups() else m.group(0)
                 # `res.status === 401` is transport, not schema. The captured
                 # name tells us: if it is literally `status` and a receiver
