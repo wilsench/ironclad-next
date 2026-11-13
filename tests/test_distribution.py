@@ -314,6 +314,31 @@ def test_adopted_repo_does_not_check_the_payload() -> None:
        "dropping the usual ignores would flood every repo")
 
 
+def test_banner_points_at_the_public_release() -> None:
+    """The internal docs must say where the general version is.
+
+    /ironclad/ belongs to the office repo; its pages describe 0.10.2 and nothing
+    in them knows a public release exists. A reader who lands there has no path
+    forward unless something tells them. The banner lives in nginx, not in the
+    HTML, so this test guards the script that installs it.
+    """
+    print("\nbanner")
+    sh = ROOT / "scripts" / "install-banner.sh"
+    ok("banner script exists", sh.is_file(), "nothing would install the pointer")
+    if not sh.is_file():
+        return
+    body = sh.read_text()
+    ok("banner names the public release", "ironclad-next" in body,
+       "the banner would point at the internal docs")
+    ok("banner targets both languages",
+       "/ironclad/en/" in body and "/ironclad/" in body,
+       "/en/ pages would ship without the pointer")
+    ok("banner tests the config before replacing it",
+       body.index("nginx -t -c") < body.index('cp "$CAND" "$CONF"'),
+       "a bad candidate would land on disk before anyone noticed")
+    ok("banner keeps a backup", "BACKUP_DIR" in body, "no rollback")
+
+
 def test_page_titles_not_stale() -> None:
     print("\npage metadata")
     for lang in ("en", "id"):
@@ -337,5 +362,6 @@ if __name__ == "__main__":
     test_release_never_mounts_over_the_stable_url()
     test_page_titles_not_stale()
     test_adopted_repo_does_not_check_the_payload()
+    test_banner_points_at_the_public_release()
     print(f"\n{passed} passed, {failed} failed")
     sys.exit(1 if failed else 0)
