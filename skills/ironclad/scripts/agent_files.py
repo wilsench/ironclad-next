@@ -100,7 +100,7 @@ GLOBAL_TARGETS = [
 ]
 
 CURSOR_HEADER = """---
-description: Ironclad database rules — apply before writing schema code
+description: Ironclad project rules — apply before writing schema, endpoints, or module code
 alwaysApply: true
 ---
 """

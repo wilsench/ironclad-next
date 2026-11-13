@@ -1,6 +1,6 @@
 # Ironclad
 
-**Make the AI agent understand that the database belongs to the team — not to it.**
+**Make the AI agent understand that the project belongs to the team — not to it.**
 
 A skill for AI coding agents. Two developers, one database: one stores status as
 `ENUM('paid')`, the other as `status_code = 2`. Both pass review. Six months later
@@ -10,6 +10,10 @@ current.
 Ironclad changes one thing: before an agent writes anything that stores status, it
 **asks which way this project does it, and reads the codebase to check** — instead of
 quietly adding a second style.
+
+The same question applies past the schema, so the checker now reads four things: how
+a project stores status, how its endpoints answer, what leaked into a file git can
+carry, and how its modules depend on each other.
 
 **It is not a style guide.** There is no house rule about how to write a query, and
 you do not have to adopt one. If you want your team's answer written down and checked
@@ -111,11 +115,13 @@ never changes the exit code of `ironclad check`. See [docs/update](https://wilse
 |---|---|---|
 | Policy — what the team wants | `.agent/standards.md` | Code review |
 | Procedure — how the agent decides | `SKILL.md` + `references/` | The agent |
-| Mechanism — what a machine checks | `scripts/check_schema.py` | CI / pre-commit |
+| Mechanism — what a machine checks | `ironclad check` (`scripts/check_schema.py`) | CI / pre-commit |
 
 A skill alone is advice; a model can ignore advice. The checker is what actually holds twenty programmers to one standard. Install both, then wire the checker into CI.
 
 ## Rules
+
+Database — how this project stores status:
 
 ```
 DB-01  no native enum in schema (unless justified in the migration comment)
@@ -128,28 +134,61 @@ DB-07  timestamps carry a timezone
 DB-08  one project stores status one way (no enum table beside an integer table)
 ```
 
+API — how the endpoints answer:
+
+```
+API-01  endpoint paths named in more than one style        warn
+API-02  an error payload returned under a 2xx status       warn
+API-07  the same route declared twice                      error
+```
+
+Security — what leaked, and what is about to:
+
+```
+SEC-01  a .env that git tracks                             error (warn if untracked + not ignored)
+SEC-02  a credential written as a literal in source        error on strict
+SEC-03  .env.example missing variables the code reads      warn
+```
+
+Architecture — the shape of a project, read from its imports:
+
+```
+ARCH-01  a cycle in the import graph                       error on strict
+ARCH-02  an import pointing at a file that does not exist  warn
+```
+
+`ironclad rules` prints this list as the engine actually registers it, with the
+effective severity for your preset. `ironclad rules explain SEC-01` also prints
+what the rule refuses to decide.
+
 ## Verified, not asserted
 
 Same fixture, three presets — this is the actual output:
 
 ```
-$ check_schema.py examples/bad.sql --preset balanced
-[DB-01] ERROR  enum column
-[DB-04] ERROR  status stored as text (`stock_state`)
-[DB-03] warn   `status_code` has no FK or CHECK
-[DB-05] warn   `is_status` is not a binary concept
-→ exit 1
+$ ironclad check examples/bad.sql --preset balanced
+[DB-01] ERROR SQL/prisma enum column; use integer code + lookup table (see DB-03)
+[DB-05] warn  `is_status` is not a binary concept; use a code column
+[DB-04] ERROR status stored as text (`stock_state`); use smallint code + lookup table
+[DB-03] warn  `status_code` has no FK to a lookup table or CHECK constraint
+[DB-08] warn  status is stored 3 different ways in this project: enum, text, integer
+→ 1 file(s), 2 error(s), 3 warning(s) — exit 1
 
-$ check_schema.py examples/bad.sql --preset legacy-friendly
-→ exit 0   (4 warnings, nothing blocks)
+$ ironclad check examples/bad.sql --preset legacy-friendly
+→ 1 file(s), 0 error(s), 5 warning(s) — exit 0
+  (warnings do not fail the build; use --strict to escalate)
 
-$ check_schema.py examples/good.sql --preset strict
-→ exit 0   (integer + lookup table + FK + CHECK)
+$ ironclad check examples/good.sql --preset strict
+→ 1 file(s), 0 error(s), 0 warning(s) — exit 0
 ```
+
+Run them yourself before trusting the block above; it is a fixture in this repo,
+not a screenshot.
 
 ## Honest limitations
 
-- The checker is **regex-based**, not a real SQL/Prisma parser. It reads SQL DDL, Laravel migrations, and Prisma schema. It does not see your ORM's query builder, runtime-built SQL, or TypeScript types.
+- The checker is **pattern- and import-based**, not a real SQL/Prisma parser and not a type checker. It reads SQL DDL, Laravel migrations, Prisma schema, route declarations, credential assignments, and import statements. It does not see your ORM's query builder, runtime-built SQL, or resolved types.
+- **Every finding is a shape, not a runtime fact.** SEC-01 sees that git tracks a `.env`; it cannot know whether those credentials are still live. ARCH-01 sees a cycle; it cannot tell a deliberate one from an accident.
 - It will not catch a status field that is *semantically* wrong but syntactically fine. A human reviewer is still the last line.
 - Run it report-only first, then gate changed files. Gating an entire legacy repo on day one is how the check gets deleted from CI by lunch.
 
@@ -172,15 +211,28 @@ The gaps are the point — reserve `8x` for stock states, `9x` for departure sta
 
 ```
 skills/ironclad/
-├── SKILL.md                  # procedure + pitfalls
+├── SKILL.md                  # procedure + pitfalls the agent follows
 ├── references/
 │   ├── database.md           # decision table, worked SQL/TS/PHP
 │   ├── presets.md            # strictness levels, custom presets
-│   └── extending.md          # adding API-/SEC- rule domains
+│   └── extending.md          # adding rules and rule domains
 ├── templates/standards.md    # policy file for your repo
-├── assets/presets/*.yml      # balanced · legacy-friendly · strict
+├── assets/presets/*.yml      # balanced · coherence · legacy-friendly · strict
+├── ironclad_core/            # the engine
+│   ├── engine.py             # run rules, aggregate, count coverage
+│   ├── discovery.py          # which files are read, which are unreadable
+│   ├── config.py             # preset layering, stack detection
+│   ├── report.py             # human and JSON output
+│   ├── rules.py              # `ironclad rules`
+│   ├── doctor.py             # `ironclad doctor`
+│   └── domains/
+│       ├── database.py       # DB-01 … DB-08
+│       ├── api.py            # API-01, API-02, API-07
+│       ├── security.py       # SEC-01 … SEC-03
+│       └── architecture.py   # ARCH-01, ARCH-02
+├── bin/ironclad              # the `ironclad` command
 └── scripts/
-    ├── check_schema.py       # SQL / Laravel / Prisma linter
+    ├── check_schema.py       # entry point kept for compatibility
     └── init_standards.py     # bootstrap
 ```
 

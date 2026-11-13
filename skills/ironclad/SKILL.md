@@ -1,6 +1,6 @@
 ---
 name: ironclad
-description: "Use when several developers share one database — make sure everyone stores status the same way before the agent writes schema."
+description: "Use when several developers share one codebase — make sure the agent follows this project's existing decisions (schema, endpoints, secrets, module boundaries) instead of quietly adding a second style."
 version: 0.10.2
 author: Chia Wilsen, Hermes Agent
 license: MIT
@@ -13,8 +13,8 @@ metadata:
 
 # Ironclad
 
-**What this is:** a way to make an AI agent understand one thing before it touches
-your database — that the schema belongs to the team, not to the agent.
+**What this is:** a way to make an AI agent understand one thing before it writes
+code — that this project's decisions belong to the team, not to the agent.
 
 **What this is not:** a style guide. There is no house rule about how to write a
 query, and no requirement that you adopt one. Read this section and you have the
@@ -108,9 +108,23 @@ ironclad check --json         # same, for CI
 ironclad verify               # did my agent actually understand? (see below)
 ```
 
-Its eight rules are documented in `references/database.md`. They exist so the tool
-can point at evidence. Nothing in this skill requires your code to pass them, and a
-repo that ignores the checker is not "wrong" — it just has no automated record.
+It reads four things, and `ironclad rules` prints them as the engine actually
+registers them:
+
+| Domain | What it looks at | Rules |
+|---|---|---|
+| database | how status is stored | DB-01 … DB-08 |
+| API | how endpoints answer | API-01, API-02, API-07 |
+| security | what leaked, and what is about to | SEC-01 … SEC-03 |
+| architecture | how modules depend on each other | ARCH-01, ARCH-02 |
+
+They exist so the tool can point at evidence. Nothing in this skill requires your
+code to pass them, and a repo that ignores the checker is not "wrong" — it just has
+no automated record.
+
+Every rule has a written limit — what it refuses to decide. `ironclad rules explain
+SEC-01` prints it. That section is not decoration: SEC-01 can see that git tracks a
+`.env`, and cannot know whether those credentials are still live.
 
 ## Optional: prove the agent understood
 
@@ -145,20 +159,23 @@ preferences nobody on the team asked for.
    instruction in `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` is what makes the agent ask
    reliably. That block is installed for you.
 4. **Mistaking a green check for an agreed standard.** A checker can only see what it
-   can parse. A repo with no schema files it understands exits 2 — that is "I could
-   not look", not "all clear".
+   can parse. A repo with no files any rule can read exits 2 — that is "I could not
+   look", not "all clear". `ironclad doctor` says which of the two happened.
 5. **Silencing the checker to ship.** If it is wrong, say so and change
    `.agent/standards.yml` in a review. Never `|| true` your way past it.
 
 ## Files
 
-- `references/database.md` — the eight consistency rules, with examples
+- `references/database.md` — the eight database rules, with examples
 - `references/presets.md` — severity levels, if you use the checker
-- `references/extending.md` — applying the same idea beyond databases
+- `references/extending.md` — applying the same idea beyond databases, and how a
+  rule domain is registered
 - `templates/standards.md` — the prose record to copy into a repo
 - `assets/presets/*.yml` — `balanced` (default), `coherence`, `strict`,
   `legacy-friendly`
-- `scripts/check_schema.py` — consistency detector for SQL, Laravel, Prisma
+- `ironclad_core/domains/` — one file per domain; `database.py`, `api.py`,
+  `security.py`, `architecture.py`
+- `scripts/check_schema.py` — entry point kept for compatibility
 - `scripts/agent_files.py` — writes/removes the standing instruction block
 - `scripts/drill.py` — `--prompt`, `--grade`, `--selftest`
 - `bin/ironclad` — the `check` / `init` / `preset` / `drill` / `attach` / `update` command
