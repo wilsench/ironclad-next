@@ -337,6 +337,17 @@ def test_banner_points_at_the_public_release() -> None:
        body.index("nginx -t -c") < body.index('cp "$CAND" "$CONF"'),
        "a bad candidate would land on disk before anyone noticed")
     ok("banner keeps a backup", "BACKUP_DIR" in body, "no rollback")
+    # `location ^~ /x/` does not match `/x`; without an exact-match redirect the
+    # bare path falls through to the app behind the vhost and 404s. This was
+    # reported by the user, not by any test.
+    ok("banner redirects the bare path", "return 301" in body,
+       "/ironclad and /ironclad-next would 404")
+    # A regex tried to rewrite an existing block and swallowed its neighbour.
+    ok("banner removes blocks by brace matching", "def remove_block" in body,
+       "a regex-based rewrite can delete the next block")
+    ok("banner refuses to drop location blocks",
+       "fewer location blocks" in body,
+       "a silent deletion would go unnoticed")
 
 
 def test_old_skill_is_refused_not_used() -> None:
