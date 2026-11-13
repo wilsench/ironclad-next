@@ -39,6 +39,20 @@ else
   else
     say "reachable from origin/main" "NO — tag is on an unmerged commit"; fail=1
   fi
+
+  # The version string inside a tag says nothing about the code in it. v0.11.0
+  # was tagged, then four fixes landed on main, and every other check here still
+  # passed: same version, same digest on the mirror (which had been synced from
+  # the working tree), tag reachable. Anyone installing #v0.11.0 got the old
+  # engine while the docs promised the new one. Compare the trees, not the label.
+  if git rev-parse -q --verify "$WANT^{commit}" >/dev/null; then
+    AHEAD="$(git rev-list --count "$WANT..HEAD" -- skills/ docs/ bin/ install.sh scripts/ 2>/dev/null)"
+    if [ "${AHEAD:-0}" = "0" ]; then
+      say "payload changes after tag" "none"
+    else
+      say "payload changes after tag" "$AHEAD commit(s) — tag is stale"; fail=1
+    fi
+  fi
 fi
 
 # The live mirror is what curl and the docs actually serve.

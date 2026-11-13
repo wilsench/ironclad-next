@@ -1,6 +1,6 @@
 {
   "name": "ironclad-db-standards",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "private": true,
   "description": "Ironclad \u2014 one way to store status per project. Installs a standing instruction into every AI coding agent's config.",
   "license": "MIT",

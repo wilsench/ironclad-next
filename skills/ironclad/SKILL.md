@@ -1,7 +1,7 @@
 ---
 name: ironclad
 description: "Use when several developers share one codebase — make sure the agent follows this project's existing decisions (schema, endpoints, secrets, module boundaries) instead of quietly adding a second style."
-version: 0.11.0
+version: 0.11.1
 author: Chia Wilsen, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]

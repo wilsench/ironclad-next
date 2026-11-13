@@ -9,7 +9,7 @@
 <link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad-next/en/install/">
 <link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad-next/install/">
 <meta name="color-scheme" content="light">
-<link rel="stylesheet" href="/ironclad-next/assets/docs.css?v=0.11.0-0cff1a72">
+<link rel="stylesheet" href="/ironclad-next/assets/docs.css?v=0.11.1-0cff1a72">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -23,7 +23,7 @@
       <span class="mark" aria-hidden="true">IC</span>
       <span>
         <b>Ironclad</b>
-        <i>v0.11.0-0cff1a72 · MIT</i>
+        <i>v0.11.1-0cff1a72 · MIT</i>
       </span>
     </a>
 
@@ -86,7 +86,7 @@
     <div class="pagegrid">
       <article class="prose">
         <h1 id="install-into-your-agent">Install into your agent</h1>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.1
 </code></pre></div>
 <p>Or, if you would rather not use Node:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | bash
@@ -94,8 +94,8 @@
 <p>Both run the same installer. No questions, no menu, no second step.</p>
 <h2 id="pick-a-mode-ask-or-house">Pick a mode: <code>ask</code> or <code>house</code></h2>
 <p>The mode decides what happens when a repo has <strong>no</strong> status storage yet.</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0                          # = --mode ask
-npx github:wilsench/ironclad-next#v0.11.0 --mode house             # house default
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.1                          # = --mode ask
+npx github:wilsench/ironclad-next#v0.11.1 --mode house             # house default
 </code></pre></div>
 <ul>
 <li><strong><code>ask</code></strong> (default) — follow the repo; if nothing exists, <strong>ask</strong> which style. It
@@ -106,7 +106,7 @@ npx github:wilsench/ironclad-next#v0.11.0 --mode house             # house defau
 </ul>
 <p>The mode is read back from the file on re-install, so a <code>house</code> machine does not
 silently drop to <code>ask</code> just because you ran the installer without flags.</p>
-<p>Use a version tag (<code>#v0.11.0</code>), not <code>main</code>. Without a tag, every commit you push becomes
+<p>Use a version tag (<code>#v0.11.1</code>), not <code>main</code>. Without a tag, every commit you push becomes
 the version your whole team runs — including commits that have not been tested. With a
 tag, you hand out one state you have actually checked. To move forward, change the tag.</p>
 <p>What it does:</p>
@@ -145,19 +145,19 @@ have it: <code>sudo apt install python3</code> or <code>brew install python3</co
 <h2 id="other-agents">Other agents</h2>
 <p>The default is <code>~/.agents/skills</code>. For agents with their own directory:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash"># Claude Code
-npx github:wilsench/ironclad-next#v0.11.0 --target claude
+npx github:wilsench/ironclad-next#v0.11.1 --target claude
 
 # Hermes
-npx github:wilsench/ironclad-next#v0.11.0 --target hermes
+npx github:wilsench/ironclad-next#v0.11.1 --target hermes
 
 # opencode (native)
-npx github:wilsench/ironclad-next#v0.11.0 --target opencode
+npx github:wilsench/ironclad-next#v0.11.1 --target opencode
 
 # Antigravity, global
-npx github:wilsench/ironclad-next#v0.11.0 --target gemini
+npx github:wilsench/ironclad-next#v0.11.1 --target gemini
 
 # everything installed on this machine
-npx github:wilsench/ironclad-next#v0.11.0 --all
+npx github:wilsench/ironclad-next#v0.11.1 --all
 </code></pre></div>
 <div class="tablewrap"><table>
 <thead>
@@ -198,18 +198,18 @@ npx github:wilsench/ironclad-next#v0.11.0 --all
 <code>$CWD/.agents/skills</code> and <code>$CWD/../.agents/skills</code>. If you use Codex, install
 inside the repo so it travels with the code:</p>
 <p><code>bash
-npx github:wilsench/ironclad-next#v0.11.0 --dir .agents/skills</code></p>
+npx github:wilsench/ironclad-next#v0.11.1 --dir .agents/skills</code></p>
 </blockquote>
 <h2 id="if-you-want-the-rules-to-travel-with-the-repo">If you want the rules to travel with the repo</h2>
 <p>This is what makes a whole team use the same rulebook — the skill is in git, not
 only on one person's laptop:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --dir .agents/skills
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.1 --dir .agents/skills
 git add .agents/skills/ironclad &amp;&amp; git commit -m &quot;chore: add ironclad skill&quot;
 </code></pre></div>
 <h2 id="ci-nothing-to-skip">CI: nothing to skip</h2>
 <p>There are no prompts in the first place, so there is nothing to suppress. For a
 pipeline that wants everything at once:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --target agents --project . --preset legacy-friendly
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.1 --target agents --project . --preset legacy-friendly
 </code></pre></div>
 <h2 id="uninstall">Uninstall</h2>
 <p>Two different things can be removed, and they have different owners. Understand
@@ -217,7 +217,7 @@ this first, so you do not delete a team's rules just because you wanted to retry
 install.</p>
 <p><strong>1. The skill</strong> — lives in your agent folders, not in the repo. One command,
 sweeps every agent:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --uninstall
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.1 --uninstall
 </code></pre></div>
 <p>Removes <code>~/.agents/skills/ironclad</code>, <code>~/.claude/skills/ironclad</code>,
 <code>~/.hermes/skills/ironclad</code>, <code>~/.gemini/config/skills/ironclad</code>,
@@ -227,7 +227,7 @@ Locations that were never installed are skipped, not an error.</p>
 <code>scripts/check_schema.py</code>, <code>scripts/presets/</code>. This is a <strong>repo decision</strong>, not an
 installer artefact, so it is left alone by default. To remove it from disk too:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">cd your-repo
-npx github:wilsench/ironclad-next#v0.11.0 --uninstall --purge
+npx github:wilsench/ironclad-next#v0.11.1 --uninstall --purge
 </code></pre></div>
 <p>If those files were committed, purge only clears the disk — Git still tracks them:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">git rm -r .agent scripts
@@ -252,7 +252,7 @@ command -v ironclad
 <a class="next" href="/ironclad-next/en/how-agents-use-it/"><span>Next</span><b>How agents use it</b></a>
         </nav>
         <footer class="docfoot">
-          <span>Ironclad v0.11.0-0cff1a72</span>
+          <span>Ironclad v0.11.1-0cff1a72</span>
           <span>MIT</span>
           <span>Chia Wilsen</span>
         </footer>
@@ -282,7 +282,7 @@ command -v ironclad
   <p class="hint">↑ ↓ select · ↵ open · ESC close</p>
 </div>
 
-<script src="/ironclad-next/assets/docs.js?v=0.11.0-0cff1a72" defer></script>
-<script src="/ironclad-next/assets/search-index.en.js?v=0.11.0-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/docs.js?v=0.11.1-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/search-index.en.js?v=0.11.1-0cff1a72" defer></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad-next/en/troubleshooting/">
 <link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad-next/troubleshooting/">
 <meta name="color-scheme" content="light">
-<link rel="stylesheet" href="/ironclad-next/assets/docs.css?v=0.11.0-0cff1a72">
+<link rel="stylesheet" href="/ironclad-next/assets/docs.css?v=0.11.1-0cff1a72">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -23,7 +23,7 @@
       <span class="mark" aria-hidden="true">IC</span>
       <span>
         <b>Ironclad</b>
-        <i>v0.11.0-0cff1a72 · MIT</i>
+        <i>v0.11.1-0cff1a72 · MIT</i>
       </span>
     </a>
 
@@ -167,12 +167,12 @@ which one with <code>ironclad rules</code>, and see <em>Score got worse after ad
 <h2 id="curl-bash-seems-to-ignore-my-input"><code>curl … | bash</code> seems to ignore my input</h2>
 <p>It does not read stdin — by design, there is nothing to answer. If you passed
 flags and they were ignored, they must come after <code>-s --</code>:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.0 --target claude
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx github:wilsench/ironclad-next#v0.11.1 --target claude
 </code></pre></div>
 <p>Without <code>-s --</code>, the arguments go to <code>bash</code> itself, which ignores them.</p>
 <h2 id="behind-a-proxy-or-the-mirror-is-unreachable">Behind a proxy, or the mirror is unreachable</h2>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">IRONCLAD_BASE=https://raw.githubusercontent.com/wilsench/ironclad-next/main/skills/ironclad \
-  npx github:wilsench/ironclad-next#v0.11.0
+  npx github:wilsench/ironclad-next#v0.11.1
 </code></pre></div>
 <p><code>IRONCLAD_BASE</code> overrides the payload source entirely. Use it for an internal
 mirror — the file list is fixed and printed in the installer's <code>FILES</code> variable.</p>
@@ -189,7 +189,7 @@ mirror — the file list is fixed and printed in the installer's <code>FILES</co
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad version
 </code></pre></div>
 <p>If that is not the version you meant to install:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx --yes github:wilsench/ironclad-next#v0.11.0 --force
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">npx --yes github:wilsench/ironclad-next#v0.11.1 --force
 </code></pre></div>
 <p><code>--force</code> makes the installer overwrite the existing payload. If it is still stale,
 clear the npm cache: <code>npm cache clean --force</code>.</p>
@@ -212,7 +212,7 @@ installer prints the line to add to <code>~/.bashrc</code>.</p>
 <a class="next" href="/ironclad-next/en/faq/"><span>Next</span><b>FAQ</b></a>
         </nav>
         <footer class="docfoot">
-          <span>Ironclad v0.11.0-0cff1a72</span>
+          <span>Ironclad v0.11.1-0cff1a72</span>
           <span>MIT</span>
           <span>Chia Wilsen</span>
         </footer>
@@ -249,7 +249,7 @@ installer prints the line to add to <code>~/.bashrc</code>.</p>
   <p class="hint">↑ ↓ select · ↵ open · ESC close</p>
 </div>
 
-<script src="/ironclad-next/assets/docs.js?v=0.11.0-0cff1a72" defer></script>
-<script src="/ironclad-next/assets/search-index.en.js?v=0.11.0-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/docs.js?v=0.11.1-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/search-index.en.js?v=0.11.1-0cff1a72" defer></script>
 </body>
 </html>
