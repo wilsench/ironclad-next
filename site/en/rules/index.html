@@ -87,11 +87,17 @@
       <article class="prose">
         <h1 id="rules">Rules</h1>
 <p>Each rule has an ID. Use the ID in reviews, in commit messages, in CI output.
-"Use DB-03 here" is a shorter conversation than a paragraph about foreign keys.</p>
+"Use DB-03 here" is a shorter conversation than a paragraph about foreign keys.
+The prefix says which files the rule opens: <code>DB-</code> database schema, <code>API-</code> route
+declarations, <code>SEC-</code> credentials and <code>.env</code> files, <code>ARCH-</code> the import graph.</p>
 <h2 id="summary">Summary</h2>
 <p>The <strong>Status</strong> column below is behaviour under the <code>balanced</code> preset (the
-default). Under <code>strict</code> everything becomes <code>error</code>; under <code>legacy-friendly</code>
-everything is <code>warn</code>.</p>
+default). Under <code>strict</code> all sixteen become <code>error</code>. Under <code>legacy-friendly</code>
+everything is <code>warn</code> and nothing blocks a build — except ARCH-01 and ARCH-02,
+which are turned <code>off</code> entirely: import cycles in a legacy project usually
+predate your arrival, and blocking every one on day one is how a rule gets
+deleted from CI. Run <code>ironclad rules --preset &lt;name&gt;</code> for what applies to your
+preset, rather than what is written here.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>

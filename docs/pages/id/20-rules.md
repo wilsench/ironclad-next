@@ -8,11 +8,19 @@ summary: Enam belas aturan di empat domain, masing-masing dengan contoh salah ya
 
 # Aturan
 
-Setiap aturan punya ID, supaya laporan agent dan komentar review bisa mengutipnya. Formatnya `DB-nn` untuk database; domain lain memakai awalan sendiri (`API-`, `SEC-`) lewat `references/extending.md`.
+Setiap aturan punya ID, supaya laporan agent dan komentar review bisa mengutipnya.
+Awalan menunjukkan berkas mana yang dibuka aturan itu: `DB-` skema database,
+`API-` deklarasi rute, `SEC-` kredensial dan `.env`, `ARCH-` graf impor.
 
 ## Ringkasan
 
-Kolom **Status** di bawah adalah perilaku pada preset `balanced` (default). Pada `strict` semuanya jadi `error`; pada `legacy-friendly` semuanya `warn`.
+Kolom **Status** di bawah adalah perilaku pada preset `balanced` (default). Pada
+`strict` keenam belas aturan jadi `error`. Pada `legacy-friendly` semuanya `warn`
+dan tidak ada yang memblokir build — kecuali ARCH-01 dan ARCH-02, yang dimatikan
+sama sekali: siklus impor di proyek warisan biasanya sudah ada sebelum kamu tiba,
+dan memblokir semuanya di hari pertama adalah cara aturan ini dihapus dari CI.
+Jalankan `ironclad rules --preset <nama>` untuk melihat yang berlaku pada
+presetmu, bukan yang tertulis di sini.
 
 | ID | Aturan | Status |
 |---|---|---|

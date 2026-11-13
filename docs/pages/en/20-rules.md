@@ -10,12 +10,18 @@ summary: Sixteen rules across four domains, each with the wrong example the chec
 
 Each rule has an ID. Use the ID in reviews, in commit messages, in CI output.
 "Use DB-03 here" is a shorter conversation than a paragraph about foreign keys.
+The prefix says which files the rule opens: `DB-` database schema, `API-` route
+declarations, `SEC-` credentials and `.env` files, `ARCH-` the import graph.
 
 ## Summary
 
 The **Status** column below is behaviour under the `balanced` preset (the
-default). Under `strict` everything becomes `error`; under `legacy-friendly`
-everything is `warn`.
+default). Under `strict` all sixteen become `error`. Under `legacy-friendly`
+everything is `warn` and nothing blocks a build — except ARCH-01 and ARCH-02,
+which are turned `off` entirely: import cycles in a legacy project usually
+predate your arrival, and blocking every one on day one is how a rule gets
+deleted from CI. Run `ironclad rules --preset <name>` for what applies to your
+preset, rather than what is written here.
 
 | ID | Rule | Status |
 |---|---|---|

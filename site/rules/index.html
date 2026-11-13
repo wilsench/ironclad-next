@@ -86,9 +86,17 @@
     <div class="pagegrid">
       <article class="prose">
         <h1 id="aturan">Aturan</h1>
-<p>Setiap aturan punya ID, supaya laporan agent dan komentar review bisa mengutipnya. Formatnya <code>DB-nn</code> untuk database; domain lain memakai awalan sendiri (<code>API-</code>, <code>SEC-</code>) lewat <code>references/extending.md</code>.</p>
+<p>Setiap aturan punya ID, supaya laporan agent dan komentar review bisa mengutipnya.
+Awalan menunjukkan berkas mana yang dibuka aturan itu: <code>DB-</code> skema database,
+<code>API-</code> deklarasi rute, <code>SEC-</code> kredensial dan <code>.env</code>, <code>ARCH-</code> graf impor.</p>
 <h2 id="ringkasan">Ringkasan</h2>
-<p>Kolom <strong>Status</strong> di bawah adalah perilaku pada preset <code>balanced</code> (default). Pada <code>strict</code> semuanya jadi <code>error</code>; pada <code>legacy-friendly</code> semuanya <code>warn</code>.</p>
+<p>Kolom <strong>Status</strong> di bawah adalah perilaku pada preset <code>balanced</code> (default). Pada
+<code>strict</code> keenam belas aturan jadi <code>error</code>. Pada <code>legacy-friendly</code> semuanya <code>warn</code>
+dan tidak ada yang memblokir build — kecuali ARCH-01 dan ARCH-02, yang dimatikan
+sama sekali: siklus impor di proyek warisan biasanya sudah ada sebelum kamu tiba,
+dan memblokir semuanya di hari pertama adalah cara aturan ini dihapus dari CI.
+Jalankan <code>ironclad rules --preset &lt;nama&gt;</code> untuk melihat yang berlaku pada
+presetmu, bukan yang tertulis di sini.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>

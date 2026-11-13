@@ -224,6 +224,39 @@ def test_install_commands_point_at_the_released_repo() -> None:
     ok("update checker watches the released repo", "ironclad-next" in check)
 
 
+def test_docs_claims_about_presets_are_true() -> None:
+    """A docs sentence that a preset makes "everything error" is checkable.
+
+    The ID page said strict turns everything into an error while the balanced
+    table showed only three domains — the reader cannot tell whether that is
+    sixteen rules or eight, and the sentence was never verified against the
+    engine.
+    """
+    print("\npreset claims in the rules pages")
+    for preset, want_errors in (("strict", 16), ("legacy-friendly", 0)):
+        r = run([sys.executable, str(PAYLOAD / "scripts" / "check_schema.py"),
+                 "rules", "--preset", preset], cwd=str(PAYLOAD))
+        # Only rows that start with an ID; the output also carries a line like
+        # "off in this preset: ARCH-01, ARCH-02", which mentions IDs without
+        # being a rule row.
+        rows = [l for l in r.stdout.splitlines()
+                if re.match(r"\s*(DB|API|SEC|ARCH)-\d", l)]
+        ok(f"{preset} lists 16 rules", len(rows) == 16, f"listed {len(rows)}")
+        # The severity is a fixed column right after the ID, not a word
+        # anywhere in the line: API-02's *title* is "error payload returned
+        # with a success status", which contains "error" while its severity is
+        # warn. Counting substrings got that wrong the first time.
+        errors = sum(1 for l in rows
+                     if re.match(r"\s*\S+\s+(ERROR|error)\s", l))
+        ok(f"{preset} has {want_errors} errors", errors == want_errors, f"have {errors}")
+
+    for lang in ("en", "id"):
+        page = ROOT / "docs" / "pages" / lang / "20-rules.md"
+        if page.is_file():
+            text = page.read_text()
+            ok(f"{lang} rules page says sixteen", "sixteen" in text.lower() or "enam belas" in text.lower())
+
+
 def test_page_titles_not_stale() -> None:
     print("\npage metadata")
     for lang in ("en", "id"):
@@ -243,6 +276,7 @@ if __name__ == "__main__":
     test_release_guard_checks_content()
     test_docs_match_engine()
     test_install_commands_point_at_the_released_repo()
+    test_docs_claims_about_presets_are_true()
     test_page_titles_not_stale()
     print(f"\n{passed} passed, {failed} failed")
     sys.exit(1 if failed else 0)
