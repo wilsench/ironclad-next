@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rules DB-01…DB-08 — Ironclad</title>
-<meta name="description" content="Eight database rules, each with a wrong and a right example the checker actually tests. DB-08 is the one that answers the team problem.">
+<title>Rules — Ironclad</title>
+<meta name="description" content="Sixteen rules across four domains, each with the wrong example the checker actually tests — and a note on what each one refuses to decide.">
 <link rel="canonical" href="https://wilsench.my.id/ironclad/en/rules/">
 <link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad/en/rules/">
 <link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad/rules/">
@@ -53,7 +53,7 @@
 <li><a href="/ironclad/en/presets/">Presets — how hard it bites</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Reference</div><ul>
-<li><a href="/ironclad/en/rules/" class="active" aria-current="page">Rules DB-01…DB-08</a></li>
+<li><a href="/ironclad/en/rules/" class="active" aria-current="page">Rules</a></li>
 <li><a href="/ironclad/en/checker/">Checker</a></li>
 <li><a href="/ironclad/en/extending/">Extending</a></li>
 <li><a href="/ironclad/en/frameworks/">Laravel, Prisma, and other backends</a></li>
@@ -78,7 +78,7 @@
       <button class="burger" type="button" id="burger" aria-label="Open menu" aria-expanded="false">
         <span></span><span></span>
       </button>
-      <span class="crumb">Reference / <b>Rules DB-01…DB-08</b></span>
+      <span class="crumb">Reference / <b>Rules</b></span>
       <a class="langsw-mini" href="/ironclad/rules/" aria-label="Language">ID</a>
       <button class="searchmini" type="button" id="searchmini" aria-label="Search">/<span>Search</span></button>
     </header>
@@ -143,6 +143,100 @@ everything is <code>warn</code>.</p>
 </tr>
 </tbody>
 </table></div>
+<h3 id="api-how-the-endpoints-answer">API — how the endpoints answer</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API-01</td>
+<td>Endpoint paths named in more than one style</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+<tr>
+<td>API-02</td>
+<td>An error payload returned under a 2xx status</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+<tr>
+<td>API-07</td>
+<td>The same route declared twice</td>
+<td><span class="sev sev-error">error</span></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="security-what-leaked-and-what-is-about-to">Security — what leaked, and what is about to</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SEC-01</td>
+<td>A credential in a file git could ship</td>
+<td>warn (error when tracked)</td>
+</tr>
+<tr>
+<td>SEC-02</td>
+<td>A credential hardcoded in source</td>
+<td><span class="sev sev-error">error</span></td>
+</tr>
+<tr>
+<td>SEC-03</td>
+<td><code>.env.example</code> and <code>.env</code> disagree</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="architecture-the-shape-of-the-project">Architecture — the shape of the project</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ARCH-01</td>
+<td>Files import each other in a cycle</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+<tr>
+<td>ARCH-02</td>
+<td>An import points at a file that does not exist</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+</tbody>
+</table></div>
+<p>Full detail for each domain is in <code>references/</code> inside the skill, and
+<code>ironclad rules explain &lt;ID&gt;</code> prints the same reasoning plus <strong>what the rule
+refuses to decide</strong> — the part that matters when you disagree with a finding.</p>
+<h2 id="why-these-four-domains-and-not-more">Why these four domains and not more</h2>
+<p>A rule set is a claim about what can be checked honestly from source alone. Each
+of these was measured on real repositories before it shipped, and several
+proposed rules were dropped because the measurement said no:</p>
+<ul>
+<li>"a controller must not touch a model" fired on <strong>6 of 7</strong> controllers in a real
+  Laravel repo — that is the framework's documented idiom, not a defect.</li>
+<li>"a skipped test" fired <strong>zero</strong> times across every repo on the machine that
+  built this tool. A rule that has never fired is a rule nobody knows works.</li>
+<li>"a test file per module" assumed a mapping that never existed in a real
+  monorepo: 15 test files across three workspaces.</li>
+</ul>
+<p>These are not opinions about style. They are the residue of measurements, and the
+measurements are recorded in <code>docs/PHASE2_API_DOMAIN.md</code> through
+<code>docs/PHASE5_DX.md</code> in the repository.</p>
 <h2 id="db-01-no-enum-columns">DB-01 — no enum columns</h2>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-sql">-- wrong
 status ENUM('pending', 'paid', 'shipped')
@@ -283,6 +377,10 @@ not reassigned, because old review comments would then point at the wrong rule.<
       <aside class="toc" aria-label="On this page">
         <div class="navlabel"><span>§</span>On this page</div>
         <ul><li class="lvl2"><a href="#summary">Summary</a></li>
+<li class="lvl3"><a href="#api-how-the-endpoints-answer">API — how the endpoints answer</a></li>
+<li class="lvl3"><a href="#security-what-leaked-and-what-is-about-to">Security — what leaked, and what is about to</a></li>
+<li class="lvl3"><a href="#architecture-the-shape-of-the-project">Architecture — the shape of the project</a></li>
+<li class="lvl2"><a href="#why-these-four-domains-and-not-more">Why these four domains and not more</a></li>
 <li class="lvl2"><a href="#db-01-no-enum-columns">DB-01 — no enum columns</a></li>
 <li class="lvl2"><a href="#db-02-no-magic-numbers">DB-02 — no magic numbers</a></li>
 <li class="lvl2"><a href="#db-03-status-needs-a-lookup-table-and-a-foreign-key">DB-03 — status needs a lookup table and a foreign key</a></li>

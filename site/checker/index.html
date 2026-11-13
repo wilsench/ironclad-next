@@ -53,7 +53,7 @@
 <li><a href="/ironclad/presets/">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/">Aturan DB-01…DB-08</a></li>
+<li><a href="/ironclad/rules/">Aturan</a></li>
 <li><a href="/ironclad/checker/" class="active" aria-current="page">Checker</a></li>
 <li><a href="/ironclad/extending/">Memperluas</a></li>
 <li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
@@ -86,7 +86,12 @@
     <div class="pagegrid">
       <article class="prose">
         <h1 id="checker">Checker</h1>
-<p><code>scripts/check_schema.py</code> — linter schema tanpa dependensi (stdlib Python saja, tidak butuh PyYAML).</p>
+<p><code>scripts/check_schema.py</code> adalah pintu masuk ke <code>ironclad_core/</code>, paket kecil tanpa
+dependensi (stdlib Python saja, tidak butuh PyYAML). Ia membaca berkas skema dan
+kode sumber di empat domain — lihat <a href="/ironclad/rules/">Aturan</a> untuk daftar terkini.</p>
+<p>Pintu masuknya sengaja tetap satu berkas: repo yang menyalin checker lewat
+<code>--with-checker</code> masih bisa menjalankan <code>python3 scripts/check_schema.py</code>, dan
+mesinnya ikut sebagai <code>scripts/ironclad_core/</code>.</p>
 <h2 id="penggunaan">Penggunaan</h2>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">python3 scripts/check_schema.py [paths…] [opsi]
 </code></pre></div>
@@ -124,6 +129,12 @@
 </tr>
 </tbody>
 </table></div>
+<p>Tiga perintah lain membaca lapisan config yang sama dengan <code>check</code>, jadi yang
+mereka tampilkan adalah yang benar-benar akan dijalankan:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">ironclad doctor                 # kenapa ini tidak bekerja seperti yang saya harapkan?
+ironclad rules                  # semua aturan dan keparahan efektifnya
+ironclad rules explain SEC-01   # apa yang dicari, dan apa yang menolak ia putuskan
+</code></pre></div>
 <p>Urutan prioritas, dari paling lemah ke paling kuat:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code>builtin:balanced  &lt;  .agent/standards.yml  &lt;  --preset  &lt;  --config
 </code></pre></div>
@@ -152,6 +163,10 @@ sebagai preset tersebut, jadi keduanya sah: nama saja, atau aturan eksplisit.</p
 <tr>
 <td><code>2</code></td>
 <td>salah pakai — preset tidak dikenal, config tidak ditemukan, tidak ada file</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>instalasinya sendiri rusak (mesin tidak ditemukan)</td>
 </tr>
 </tbody>
 </table></div>
@@ -206,21 +221,36 @@ preset: balanced (.agent/standards.yml)
 <td><code>.prisma</code></td>
 <td><code>enum</code> block, tipe kolom, <code>@relation</code></td>
 </tr>
+<tr>
+<td><code>.js</code> <code>.ts</code> <code>.tsx</code> <code>.py</code> dll.</td>
+<td>deklarasi rute (API), kredensial (SEC), graf impor (ARCH)</td>
+</tr>
 </tbody>
 </table></div>
-<p>File yang dilewati otomatis: <code>node_modules</code>, <code>.git</code>, <code>vendor</code>, <code>dist</code>, <code>build</code>, dan file berukuran tidak wajar.</p>
+<p>Daftar itu bukan keputusan inti: tiap domain mendeklarasikan sendiri ekstensi yang
+ia klaim, dan mesin menggabungkannya. Menambah domain berarti menambah berkas,
+bukan mengubah mesin.</p>
+<p>File yang dilewati otomatis: <code>node_modules</code>, <code>.git</code>, <code>vendor</code>, <code>dist</code>, <code>build</code>,
+<code>coverage</code>, virtualenv, dan pohon dependensi bersarang.</p>
 <h2 id="apa-yang-tidak-terdeteksi">Apa yang <strong>tidak</strong> terdeteksi</h2>
 <p>Ini penting, karena checker yang dipercaya berlebihan lebih berbahaya daripada tidak ada checker.</p>
 <ul>
-<li><strong>Query builder ORM</strong> — <code>Order::where('status_code', 3)</code> di <code>app/</code> tidak dibaca; hanya berkas dengan ekstensi di atas.</li>
+<li><strong>Query builder ORM</strong> — <code>Order::where('status_code', 3)</code> tidak dinilai sebagai
+  pelanggaran skema; ia hanya dibaca oleh domain API/arsitektur.</li>
 <li><strong>SQL yang dirangkai runtime</strong> — string yang dibangun dari variabel tidak bisa dinilai tanpa mengeksekusi kode.</li>
 <li><strong>Tipe di TypeScript</strong> — <code>type Status = 1 | 2 | 3</code> tidak terlihat sama sekali.</li>
 <li><strong>Kesalahan semantik</strong> — kolom bernama <code>status_code</code> yang berisi kode salah tetap lolos secara sintaksis.</li>
-<li><strong>Konvensi lintas-berkas</strong> — lookup table di berkas A dan FK di berkas B dinilai per berkas untuk DB-03.</li>
+<li><strong>Sebagian konvensi lintas-berkas</strong> — DB-08 membandingkan gaya status seluruh
+  proyek dan ARCH-01 membangun graf impor, tapi keduanya tidak tahu bahwa lookup
+  table-mu ada di migration lain dan di-join di tempat lain.</li>
 </ul>
 <p>Untuk semua itu, reviewer manusia tetap lapis terakhir. Checker menangkap pola yang mahal dan berulang, bukan menggantikan penilaian.</p>
 <h2 id="menulis-aturan-sendiri">Menulis aturan sendiri</h2>
-<p>Lihat <a href="/ironclad/extending/">Memperluas</a> — cara menambah domain aturan (API, security) beserta pemeriksanya.</p>
+<p>Lihat <a href="/ironclad/extending/">Memperluas</a> — cara menambah aturan ke domain yang ada, atau
+membuat domain baru beserta aturannya.</p>
+<p>Sebelum menulis aturan, ukur dulu: jalankan pada repo nyata dan hitung apa yang
+akan ia laporkan. Tiga aturan yang diusulkan untuk proyek ini gugur setelah
+diukur — termasuk satu yang menyala di 6 dari 7 controller Laravel sungguhan.</p>
 <h2 id="hasil-uji-pada-fixture">Hasil uji pada fixture</h2>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code>examples/good.sql            balanced 0 error 0 warn   exit 0
                              strict   0 error 0 warn   exit 0
@@ -231,7 +261,7 @@ examples/bad.prisma          1 temuan
 </code></pre></div>
 <p>Angka-angka ini ikut diuji di CI repo ini lewat <code>.github/workflows/engineering-standards.yml</code>, jadi kalau checker-nya rusak, CI yang memberi tahu lebih dulu — bukan penggunanya.</p>
         <nav class="pager" aria-label="Halaman berikutnya">
-          <a class="prev" href="/ironclad/rules/"><span>Sebelumnya</span><b>Aturan DB-01…DB-08</b></a>
+          <a class="prev" href="/ironclad/rules/"><span>Sebelumnya</span><b>Aturan</b></a>
 <a class="next" href="/ironclad/extending/"><span>Berikutnya</span><b>Memperluas</b></a>
         </nav>
         <footer class="docfoot">

@@ -53,7 +53,7 @@
 <li><a href="/ironclad/en/presets/">Presets — how hard it bites</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Reference</div><ul>
-<li><a href="/ironclad/en/rules/">Rules DB-01…DB-08</a></li>
+<li><a href="/ironclad/en/rules/">Rules</a></li>
 <li><a href="/ironclad/en/checker/">Checker</a></li>
 <li><a href="/ironclad/en/extending/">Extending</a></li>
 <li><a href="/ironclad/en/frameworks/">Laravel, Prisma, and other backends</a></li>
@@ -202,7 +202,10 @@ or what is in the YAML file.</p>
 <li><strong>It is not a replacement for a programmer.</strong> It writes no features, fixes no bugs.</li>
 <li><strong>It is not a replacement for review.</strong> It catches patterns; it cannot know whether
   your business logic is right.</li>
-<li><strong>It is not a security tool.</strong> It does not look for data leaks or access holes.</li>
+<li><strong>It is not a security audit.</strong> It checks three things a file can prove — a
+  credential in a file git could ship, a credential hardcoded in source, and an
+  <code>.env.example</code> that has drifted from <code>.env</code>. It does not find access-control
+  holes, injection, or anything that needs the app running.</li>
 <li><strong>It does not change how your app looks.</strong> Nothing to do with design.</li>
 <li><strong>It sends no data anywhere.</strong> Everything runs on your own machine.</li>
 </ul>
@@ -210,9 +213,13 @@ or what is in the YAML file.</p>
 <ul>
 <li><strong>The checker matches patterns, it does not understand code.</strong> It can flag
   something correct and miss something wrong. A human stays the last layer.</li>
-<li><strong>The scope is deliberately narrow.</strong> Eight patterns about how status, money, and
-  time are stored. Not two hundred database rules. A tool that tries to catch
-  everything loses to a dedicated linter, and nobody installs it twice.</li>
+<li><strong>The scope is deliberately narrow.</strong> Sixteen rules across four domains — how
+  status, money and time are stored; how endpoints answer; what leaked; and how
+  the modules depend on each other. Not two hundred rules. A tool that tries to
+  catch everything loses to a dedicated linter, and nobody installs it twice.</li>
+<li><strong>Several rules were dropped after measuring them.</strong> "A controller must not
+  touch a model" fired on 6 of 7 controllers in a real Laravel repo. It is not in
+  the tool.</li>
 <li><strong>Unsupported frameworks stop honestly</strong> (<code>exit 2</code>) instead of pretending to be green.</li>
 <li><strong>It cannot force anyone to read.</strong> If CI is not wired up and
   <code>.agent/standards.md</code> is ignored, nothing catches it. The gate does the work, not

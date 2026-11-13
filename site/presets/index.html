@@ -53,7 +53,7 @@
 <li><a href="/ironclad/presets/" class="active" aria-current="page">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/">Aturan DB-01…DB-08</a></li>
+<li><a href="/ironclad/rules/">Aturan</a></li>
 <li><a href="/ironclad/checker/">Checker</a></li>
 <li><a href="/ironclad/extending/">Memperluas</a></li>
 <li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
@@ -112,14 +112,14 @@ kode ditulis. Lihat <a href="/ironclad/modes/">Mode</a>.</p>
 </tr>
 <tr>
 <td><code>coherence</code></td>
-<td>DB-08 (gaya campur)</td>
+<td>DB-08, API-07, SEC-01, SEC-02</td>
 <td>sisanya</td>
 <td><strong>siapa saja</strong> yang tidak mau dipaksa satu gaya</td>
 </tr>
 <tr>
 <td><code>balanced</code></td>
-<td>DB-01, DB-02, DB-04</td>
-<td>DB-03, DB-05…DB-08</td>
+<td>DB-01, DB-02, DB-04, API-07, SEC-02</td>
+<td>DB-03, DB-05…DB-08, API-01, API-02, SEC-01, SEC-03, ARCH-01, ARCH-02</td>
 <td>pekerjaan produk normal; default kantor</td>
 </tr>
 <tr>
@@ -131,10 +131,10 @@ kode ditulis. Lihat <a href="/ironclad/modes/">Mode</a>.</p>
 </tbody>
 </table></div>
 <p>Angka nyata dari fixture yang sama (<code>examples/bad.sql</code>):</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code>balanced           errors=3 warns=5
-coherence          errors=2 warns=6
-legacy-friendly    errors=0 warns=8
-strict             errors=8 warns=0
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code>balanced           errors=6 warns=11
+coherence          errors=5 warns=11
+legacy-friendly    errors=0 warns=15
+strict             errors=17 warns=0
 </code></pre></div>
 <p>Perhatikan <code>coherence</code>: ia punya <strong>lebih sedikit</strong> error daripada <code>balanced</code>, dan
 itu maksudnya. Di preset itu enum tidak dihukum. Yang gagal hanya DB-08 — konsep
@@ -248,7 +248,7 @@ tidak bisa ditulis dalam satu baris PR, berarti aturannya belum perlu dimatikan.
 jalan, bukan crash.</p>
         <nav class="pager" aria-label="Halaman berikutnya">
           <a class="prev" href="/ironclad/three-layers/"><span>Sebelumnya</span><b>Tiga lapis</b></a>
-<a class="next" href="/ironclad/rules/"><span>Berikutnya</span><b>Aturan DB-01…DB-08</b></a>
+<a class="next" href="/ironclad/rules/"><span>Berikutnya</span><b>Aturan</b></a>
         </nav>
         <footer class="docfoot">
           <span>Ironclad v0.10.2-0cff1a72</span>

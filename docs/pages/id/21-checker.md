@@ -8,7 +8,13 @@ summary: Referensi lengkap check_schema.py — argumen, exit code, format JSON, 
 
 # Checker
 
-`scripts/check_schema.py` — linter schema tanpa dependensi (stdlib Python saja, tidak butuh PyYAML).
+`scripts/check_schema.py` adalah pintu masuk ke `ironclad_core/`, paket kecil tanpa
+dependensi (stdlib Python saja, tidak butuh PyYAML). Ia membaca berkas skema dan
+kode sumber di empat domain — lihat [Aturan](/rules/) untuk daftar terkini.
+
+Pintu masuknya sengaja tetap satu berkas: repo yang menyalin checker lewat
+`--with-checker` masih bisa menjalankan `python3 scripts/check_schema.py`, dan
+mesinnya ikut sebagai `scripts/ironclad_core/`.
 
 ## Penggunaan
 
@@ -24,6 +30,15 @@ python3 scripts/check_schema.py [paths…] [opsi]
 | `--json` | keluaran mesin |
 | `--strict` | eskalasi semua warn jadi error (flag lama) |
 | `--list-presets` | tampilkan preset beserta hitungannya |
+
+Tiga perintah lain membaca lapisan config yang sama dengan `check`, jadi yang
+mereka tampilkan adalah yang benar-benar akan dijalankan:
+
+```bash
+ironclad doctor                 # kenapa ini tidak bekerja seperti yang saya harapkan?
+ironclad rules                  # semua aturan dan keparahan efektifnya
+ironclad rules explain SEC-01   # apa yang dicari, dan apa yang menolak ia putuskan
+```
 
 Urutan prioritas, dari paling lemah ke paling kuat:
 
@@ -44,6 +59,7 @@ sebagai preset tersebut, jadi keduanya sah: nama saja, atau aturan eksplisit.
 | `0` | bersih, atau hanya warning pada preset yang tidak memblokir |
 | `1` | ada error yang memblokir |
 | `2` | salah pakai — preset tidak dikenal, config tidak ditemukan, tidak ada file |
+| `3` | instalasinya sendiri rusak (mesin tidak ditemukan) |
 
 Bisa dipakai langsung sebagai gate CI tanpa membungkusnya dengan `grep`.
 
@@ -93,24 +109,38 @@ Field `source` bisa berupa path berkas (`.agent/standards.yml`), nama preset (`p
 | `.sql` | `CREATE TABLE`, `ALTER TABLE … ADD COLUMN`, `INSERT` (untuk melewati literal) |
 | `.php` | migration Laravel: `$table->enum()`, `$table->string('status')`, `$table->tinyInteger()` |
 | `.prisma` | `enum` block, tipe kolom, `@relation` |
+| `.js` `.ts` `.tsx` `.py` dll. | deklarasi rute (API), kredensial (SEC), graf impor (ARCH) |
 
-File yang dilewati otomatis: `node_modules`, `.git`, `vendor`, `dist`, `build`, dan file berukuran tidak wajar.
+Daftar itu bukan keputusan inti: tiap domain mendeklarasikan sendiri ekstensi yang
+ia klaim, dan mesin menggabungkannya. Menambah domain berarti menambah berkas,
+bukan mengubah mesin.
+
+File yang dilewati otomatis: `node_modules`, `.git`, `vendor`, `dist`, `build`,
+`coverage`, virtualenv, dan pohon dependensi bersarang.
 
 ## Apa yang **tidak** terdeteksi
 
 Ini penting, karena checker yang dipercaya berlebihan lebih berbahaya daripada tidak ada checker.
 
-- **Query builder ORM** — `Order::where('status_code', 3)` di `app/` tidak dibaca; hanya berkas dengan ekstensi di atas.
+- **Query builder ORM** — `Order::where('status_code', 3)` tidak dinilai sebagai
+  pelanggaran skema; ia hanya dibaca oleh domain API/arsitektur.
 - **SQL yang dirangkai runtime** — string yang dibangun dari variabel tidak bisa dinilai tanpa mengeksekusi kode.
 - **Tipe di TypeScript** — `type Status = 1 | 2 | 3` tidak terlihat sama sekali.
 - **Kesalahan semantik** — kolom bernama `status_code` yang berisi kode salah tetap lolos secara sintaksis.
-- **Konvensi lintas-berkas** — lookup table di berkas A dan FK di berkas B dinilai per berkas untuk DB-03.
+- **Sebagian konvensi lintas-berkas** — DB-08 membandingkan gaya status seluruh
+  proyek dan ARCH-01 membangun graf impor, tapi keduanya tidak tahu bahwa lookup
+  table-mu ada di migration lain dan di-join di tempat lain.
 
 Untuk semua itu, reviewer manusia tetap lapis terakhir. Checker menangkap pola yang mahal dan berulang, bukan menggantikan penilaian.
 
 ## Menulis aturan sendiri
 
-Lihat [Memperluas](/extending/) — cara menambah domain aturan (API, security) beserta pemeriksanya.
+Lihat [Memperluas](/extending/) — cara menambah aturan ke domain yang ada, atau
+membuat domain baru beserta aturannya.
+
+Sebelum menulis aturan, ukur dulu: jalankan pada repo nyata dan hitung apa yang
+akan ia laporkan. Tiga aturan yang diusulkan untuk proyek ini gugur setelah
+diukur — termasuk satu yang menyala di 6 dari 7 controller Laravel sungguhan.
 
 ## Hasil uji pada fixture
 

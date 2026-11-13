@@ -20,18 +20,22 @@ were red — so the level is a setting.
 | Preset | Blocks | Only warns | For |
 |---|---|---|---|
 | `legacy-friendly` | — | everything | a repo that already has debt |
-| `coherence` | DB-08 (mixed styles) | the rest | **anyone** who does not want a style imposed |
-| `balanced` | DB-01, DB-02, DB-04 | DB-03, DB-05…DB-08 | normal product work; the office default |
+| `coherence` | DB-08, API-07, SEC-01, SEC-02 | the rest | **anyone** who does not want a style imposed |
+| `balanced` | DB-01, DB-02, DB-04, API-07, SEC-02 | DB-03, DB-05…DB-08, API-01, API-02, SEC-01, SEC-03, ARCH-01, ARCH-02 | normal product work; the office default |
 | `strict` | everything | — | finance, health, anything audited |
 
 Real numbers from the same fixture (`examples/bad.sql`):
 
 ```
-balanced           errors=3 warns=5
-coherence          errors=2 warns=6
-legacy-friendly    errors=0 warns=8
-strict             errors=8 warns=0
+balanced           errors=6 warns=11
+coherence          errors=5 warns=11
+legacy-friendly    errors=0 warns=15
+strict             errors=17 warns=0
 ```
+
+`legacy-friendly` turns the architecture rules off entirely: an older codebase has
+cycles it will not fix this quarter, and a first run that opens with forty of them
+is a first run nobody repeats.
 
 Note that `coherence` has **fewer** errors than `balanced`, and that is the point.
 Under that preset an enum is not punished. Only DB-08 fails — the same concept
@@ -69,7 +73,7 @@ command is worse than a choice you can change.
 ## Choosing at install time
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 --project . --preset strict
+npx github:wilsench/ironclad#v{{VERSION}} --project . --preset strict
 ```
 
 Or later, from inside the repo:

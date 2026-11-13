@@ -47,6 +47,19 @@ The launcher points at a directory that no longer exists — usually because
 Re-run the installer. It rewrites the launcher's `IRONCLAD_HOME` to the directory
 it just used.
 
+## Start here: `ironclad doctor`
+
+Before reading the rest of this page, run it. It answers the four questions this
+page exists for, in order: is the install complete, which config layers were read,
+what files can be seen, and which rules will actually fire.
+
+```bash
+ironclad doctor
+```
+
+Exit `3` means the install itself is broken — re-run the installer. Exit `1` means
+the install is fine and the repo needs attention. It never writes anything.
+
 ## `unknown preset` / exit code 2
 
 Exit `2` is misuse, not a violation. Either the preset name is misspelled, or the
@@ -60,14 +73,20 @@ A copied checker needs its presets beside it. `ironclad init` handles this by
 writing `scripts/presets/`. If you copied `check_schema.py` by hand, copy the
 presets too.
 
-## `no .sql/.php/.prisma files found` (exit 2)
+## `no files any rule can read found` (exit 2)
 
-The path is wrong, or everything under it was skipped. The checker ignores
-`node_modules`, `vendor`, `dist`, `build`, `.git`, `storage`, and dot-directories.
+The path is wrong, or everything under it was skipped. The message names the
+extensions the loaded domains were looking for — if that list looks wrong for your
+stack, the install is old.
 
 ```bash
 ironclad check app/database     # point at the schema, not the repo root
+ironclad doctor                 # shows what was read and what was skipped
 ```
+
+The message is followed by a second one when the repo has schema this checker
+cannot parse (Django `models.py`, Rails migrations). Exit `2` in that case is not
+"clean" — it is "do not treat this as a pass".
 
 ## Two machines, different results
 
@@ -81,6 +100,35 @@ preset: balanced (preset:balanced)         ← fell back to the skill default
 If one machine says `preset:balanced`, `.agent/standards.yml` is not there — not
 committed, or the command ran from the wrong directory.
 
+## A rule fires on code I know is correct
+
+Two possibilities, and they need different answers.
+
+**The rule has a limit you hit.** Read it:
+
+```bash
+ironclad rules explain ARCH-01
+```
+
+The *what it will not decide* section is there for exactly this. If your case is
+outside what the rule can see, turn it down without turning it off — in
+`.agent/standards.yml`:
+
+```yaml
+rules:
+  ARCH-01: warn        # or: off
+```
+
+**The rule is wrong.** That is a bug worth reporting, and the useful report
+includes the file, the line, and why the code is correct. Several rules in this
+tool were narrowed or dropped because someone did exactly that.
+
+## A finding appeared that I did not have before
+
+`ironclad presets` shows the error/warn count per preset. If the number changed
+between versions, a rule was added — not a rule that started misbehaving. Check
+which one with `ironclad rules`, and see *Score got worse after adding a rule*.
+
 ## Score got worse after adding a rule
 
 Expected. A new rule finds things the old set did not look for. Roll it out as
@@ -92,7 +140,7 @@ It does not read stdin — by design, there is nothing to answer. If you passed
 flags and they were ignored, they must come after `-s --`:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 --target claude
+npx github:wilsench/ironclad#v{{VERSION}} --target claude
 ```
 
 Without `-s --`, the arguments go to `bash` itself, which ignores them.
@@ -101,7 +149,7 @@ Without `-s --`, the arguments go to `bash` itself, which ignores them.
 
 ```bash
 IRONCLAD_BASE=https://raw.githubusercontent.com/wilsench/ironclad/main/skills/ironclad \
-  npx github:wilsench/ironclad#v0.10.2
+  npx github:wilsench/ironclad#v{{VERSION}}
 ```
 
 `IRONCLAD_BASE` overrides the payload source entirely. Use it for an internal
@@ -127,7 +175,7 @@ ironclad version
 If that is not the version you meant to install:
 
 ```bash
-npx --yes github:wilsench/ironclad#v0.10.2 --force
+npx --yes github:wilsench/ironclad#v{{VERSION}} --force
 ```
 
 `--force` makes the installer overwrite the existing payload. If it is still stale,

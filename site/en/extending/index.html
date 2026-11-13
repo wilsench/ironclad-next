@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Extending — Ironclad</title>
-<meta name="description" content="Adding a new rule domain — API, security, performance — without touching the database rules that already work.">
+<meta name="description" content="Adding a rule to an existing domain, or a whole new domain — without breaking the rules that already work.">
 <link rel="canonical" href="https://wilsench.my.id/ironclad/en/extending/">
 <link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad/en/extending/">
 <link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad/extending/">
@@ -53,7 +53,7 @@
 <li><a href="/ironclad/en/presets/">Presets — how hard it bites</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Reference</div><ul>
-<li><a href="/ironclad/en/rules/">Rules DB-01…DB-08</a></li>
+<li><a href="/ironclad/en/rules/">Rules</a></li>
 <li><a href="/ironclad/en/checker/">Checker</a></li>
 <li><a href="/ironclad/en/extending/" class="active" aria-current="page">Extending</a></li>
 <li><a href="/ironclad/en/frameworks/">Laravel, Prisma, and other backends</a></li>
@@ -86,69 +86,129 @@
     <div class="pagegrid">
       <article class="prose">
         <h1 id="extending">Extending</h1>
-<p>The seven database rules are one domain. Nothing in the design assumes it is the
-only one, or that it is permanent.</p>
+<p>The rule set is split into <strong>domains</strong>, one file each. Nothing in the engine knows
+what a status column or an import cycle is; the database domain is the first client
+of the interface, not a special case inside it.</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>skills/ironclad/ironclad_core/
+├── __init__.py        Finding, Position, RuleMeta — the shape every domain shares
+├── engine.py          run rules, aggregate, count coverage
+├── discovery.py       which files to read, and which are unreadable
+├── config.py          preset layering, stack detection
+├── report.py          human and JSON output
+├── rules.py           `ironclad rules`
+├── doctor.py          `ironclad doctor`
+├── cli.py             argparse, stdout, exit codes — nothing else
+└── domains/
+    ├── database.py     DB-01 … DB-08
+    ├── api.py          API-01, API-02, API-07
+    ├── security.py     SEC-01 … SEC-03
+    └── architecture.py ARCH-01, ARCH-02
+</code></pre></div>
 <h2 id="adding-a-rule-to-an-existing-domain">Adding a rule to an existing domain</h2>
 <ol>
-<li><strong>Pick the next free ID.</strong> Database rules are <code>DB-01</code>…<code>DB-07</code>, so the next one
-   is <code>DB-08</code>. Never reuse a retired number.</li>
-<li><strong>Add the check</strong> in <code>scripts/check_schema.py</code>. One function, one rule ID.</li>
-<li><strong>Add a fixture</strong> that violates it — <code>examples/bad_&lt;topic&gt;.sql</code> — and a
-   passing counterpart.</li>
-<li><strong>Set the severity per preset</strong> in all three files in <code>assets/presets/</code>. A new
-   rule with no entry in <code>strict.yml</code> is a rule that silently does not apply.</li>
-<li><strong>Document it</strong> in <code>references/database.md</code> and in the docs <code>rules</code> page.</li>
-<li><strong>Run every fixture against every preset</strong> before committing:</li>
+<li><strong>Pick the next free ID.</strong> IDs are never reused, even after a rule is retired —
+   someone's config file or CI baseline still names the old one.</li>
+<li><strong>Write the rule class</strong> in <code>domains/&lt;domain&gt;.py</code>. A <code>Rule</code> judges one file; a
+   <code>ProjectRule</code> judges the project and runs once.</li>
+<li><strong>Declare what it reads.</strong> <code>extensions</code> is what the rule claims, and the union
+   of every declared extension is what gets scanned. A rule that claims nothing
+   reads nothing.</li>
+<li><strong>Prove it fires.</strong> A fixture that violates it, and — more important — a
+   fixture that <em>looks</em> like a violation but is correct. Half of this repo's
+   domain tests are negative, because a rule that fires on working code is worse
+   than no rule.</li>
+<li><strong>Set the severity in all four presets.</strong> A rule with no entry falls back to its
+   own default, which is how a <code>strict</code> preset silently stopped being strict.</li>
+<li><strong>Write the limit.</strong> Add an entry to <code>LIMITS</code> in <code>ironclad_core/rules.py</code>
+   saying what the rule refuses to decide. <code>ironclad rules explain</code> prints it, and
+   writing it down is what keeps the rule honest.</li>
+<li><strong>Run every gate</strong> before committing:</li>
 </ol>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">for p in balanced strict legacy-friendly; do
-  for f in examples/*.sql; do
-    python3 scripts/check_schema.py &quot;$f&quot; --preset &quot;$p&quot; &gt;/dev/null
-    echo &quot;$f $p → $?&quot;
-  done
-done
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">python3 tests/test_regressions.py
+python3 tests/test_api_domain.py        # or whichever domain you touched
+python3 tests/capture_behaviour.py after &gt; /tmp/new.json
+python3 tests/capture_behaviour.py diff /tmp/baseline.json /tmp/new.json
 </code></pre></div>
+<p>The last one is the important one: it compares 108 recorded behaviours and must
+report <code>0 changed</code> on exit codes and findings.</p>
 <h2 id="adding-a-whole-new-domain">Adding a whole new domain</h2>
-<p>Use a different prefix and keep the same shape: <code>API-01</code>, <code>SEC-01</code>, <code>PERF-01</code>.</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>skills/ironclad/
-├── SKILL.md
-├── references/
-│   ├── database.md
-│   ├── api.md          ← new domain rationale
-│   └── security.md
-├── scripts/
-│   ├── check_schema.py
-│   └── check_api.py    ← new domain checker
-├── assets/presets/
-│   ├── balanced.yml    ← add API-01: warn, SEC-01: error
-│   └── ...
-└── templates/standards.md
+<p>Create <code>domains/&lt;name&gt;.py</code> with a <code>register(reg)</code> function. <code>load_all()</code> finds it
+by walking the package, so there is no list to update and nothing in the core to
+edit.</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-python">DOMAIN = &quot;performance&quot;
+
+class Perf01NPlusOne(ProjectRule):
+    meta = RuleMeta(id=&quot;PERF-01&quot;, domain=DOMAIN,
+                    title=&quot;a query inside a loop&quot;,
+                    default_severity=&quot;warn&quot;, scope=&quot;project&quot;)
+    extensions = (&quot;.php&quot;, &quot;.js&quot;, &quot;.ts&quot;)
+
+    def applies_to(self, ctx): ...
+    def check(self, contexts, cfg): ...
+
+def register(reg):
+    reg.add(Perf01NPlusOne())
 </code></pre></div>
-<p>Two rules for new domains:</p>
+<p>Three rules for a new domain:</p>
 <ul>
-<li><strong>Separate checkers, shared config.</strong> One script per domain. A team that cares
-  about API rules and not security should be able to run one without the other.</li>
 <li><strong>One ID namespace per domain.</strong> <code>SEC-01</code> must never collide with <code>DB-01</code>, and
   the prefix must tell you which file to open.</li>
+<li><strong>No domain imports another.</strong> If <code>api</code> needs something from <code>database</code>, that
+  thing belongs in <code>core</code>.</li>
+<li><strong>Say what you cannot read.</strong> A domain that silently skips a stack is how the
+  whole tool becomes untrustworthy.</li>
 </ul>
 <h2 id="what-makes-a-rule-worth-adding">What makes a rule worth adding</h2>
+<p>Measured, not assumed. Before writing a rule, run it against real repositories and
+count what it would report. Three rules proposed for this project were dropped
+after that measurement:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Proposed</th>
+<th>Measured</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"controller must not touch a model"</td>
+<td>6 of 7 controllers in a real Laravel repo</td>
+<td>rejected — it is the framework's documented idiom</td>
+</tr>
+<tr>
+<td>"skipped test"</td>
+<td>0 occurrences across every repo on this machine</td>
+<td>rejected — a rule that never fired is a rule nobody knows works</td>
+</tr>
+<tr>
+<td>"test does not mirror its module"</td>
+<td>15 test files across 3 workspaces</td>
+<td>rejected — the 1:1 mapping never existed</td>
+</tr>
+</tbody>
+</table></div>
 <p>A rule earns its place when it is:</p>
 <ol>
 <li><strong>deterministic</strong> — same input, same verdict, no model in the loop</li>
-<li><strong>cheap to check</strong> — a regex or an AST walk, not a build</li>
-<li><strong>expensive to reverse</strong> — a schema decision, not a formatting preference</li>
+<li><strong>cheap to check</strong> — a regex or a graph walk, not a build</li>
+<li><strong>expensive to reverse</strong> — a schema or architecture decision, not a formatting
+   preference</li>
+<li><strong>quiet on correct code</strong> — the only test that matters</li>
 </ol>
-<p>Formatting belongs in a formatter. Style belongs in a linter with autofix. Ironclad
-is for decisions that reach production and stay there.</p>
+<p>Formatting belongs in a formatter. Style belongs in a linter with autofix.
+Ironclad is for decisions that reach production and stay there.</p>
 <h2 id="what-not-to-add">What not to add</h2>
 <ul>
 <li>rules that need a running database</li>
 <li>rules that depend on another repository's state</li>
 <li>rules that require reading application intent ("is this status meaningful?")</li>
 <li>anything with "sometimes" in the description</li>
+<li>anything that would fire on most of a real, working repository</li>
 </ul>
 <h2 id="changing-the-skill-itself">Changing the skill itself</h2>
-<p><code>SKILL.md</code> is the contract an agent follows. If you add a rule that the agent
-should apply <em>before</em> writing DDL, it must appear in both:</p>
+<p><code>SKILL.md</code> is the contract an agent follows. If you add a rule the agent should
+apply <em>before</em> writing code, it must appear in both:</p>
 <ol>
 <li><code>references/&lt;domain&gt;.md</code> — the reasoning</li>
 <li>the <strong>Procedure</strong> section of <code>SKILL.md</code> — the step the agent executes</li>

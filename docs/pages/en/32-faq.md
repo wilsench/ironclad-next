@@ -39,7 +39,7 @@ If you want certainty, name it: "use the ironclad skill for this migration".
 Install:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2
+npx github:wilsench/ironclad#v{{VERSION}}
 ```
 
 Then, in a repo:
@@ -59,10 +59,10 @@ opencode, Antigravity. The format is the Agent Skills standard (`SKILL.md`), not
 something Hermes-specific.
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2  --all              # everything detected on this machine
-npx github:wilsench/ironclad#v0.10.2  --target claude
-npx github:wilsench/ironclad#v0.10.2  --target gemini    # Antigravity, global
-npx github:wilsench/ironclad#v0.10.2  --target opencode
+npx github:wilsench/ironclad#v{{VERSION}}  --all              # everything detected on this machine
+npx github:wilsench/ironclad#v{{VERSION}}  --target claude
+npx github:wilsench/ironclad#v{{VERSION}}  --target gemini    # Antigravity, global
+npx github:wilsench/ironclad#v{{VERSION}}  --target opencode
 ```
 
 ## Can I use `wilsench/ironclad` directly?
@@ -73,7 +73,7 @@ For Hermes:
 hermes skills install wilsench/ironclad/skills/ironclad
 ```
 
-Other agents use `npx github:wilsench/ironclad#v0.10.2` — that pulls the package
+Other agents use `npx github:wilsench/ironclad#v{{VERSION}}` — that pulls the package
 straight from the public repo, with nothing published to npm. If the machine has no
 Node, the `install.sh` mirror on `wilsench.my.id` runs the same code.
 
@@ -169,7 +169,7 @@ invoke them by hand.
 Yes — preset `coherence`:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check . --preset coherence
+npx github:wilsench/ironclad#v{{VERSION}} check . --preset coherence
 ```
 
 Under that preset no style is punished: `enum`, a coded text column, and integer +
@@ -180,7 +180,7 @@ not have to match anyone else's.
 ## Can I try it without installing?
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check .
+npx github:wilsench/ironclad#v{{VERSION}} check .
 ```
 
 That runs the checker and exits. No files written, no agent config touched. If it comes

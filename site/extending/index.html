@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Memperluas — Ironclad</title>
-<meta name="description" content="Menambah domain aturan baru — API, keamanan, performa — tanpa menyentuh aturan database yang sudah ada.">
+<meta name="description" content="Menambah aturan ke domain yang ada, atau membuat domain baru — tanpa merusak aturan yang sudah bekerja.">
 <link rel="canonical" href="https://wilsench.my.id/ironclad/extending/">
 <link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad/extending/">
 <link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad/en/extending/">
@@ -53,7 +53,7 @@
 <li><a href="/ironclad/presets/">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/">Aturan DB-01…DB-08</a></li>
+<li><a href="/ironclad/rules/">Aturan</a></li>
 <li><a href="/ironclad/checker/">Checker</a></li>
 <li><a href="/ironclad/extending/" class="active" aria-current="page">Memperluas</a></li>
 <li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
@@ -86,106 +86,135 @@
     <div class="pagegrid">
       <article class="prose">
         <h1 id="memperluas">Memperluas</h1>
-<p>Aturan database adalah contoh yang sudah jadi. Bentuk yang sama dipakai untuk domain lain: ID berawalan, kebijakan di repo, pemeriksaan yang bisa diotomatiskan.</p>
-<h2 id="langkah-1-pilih-awalan-dan-nomor">Langkah 1 — Pilih awalan dan nomor</h2>
+<p>Set aturan dibagi menjadi <strong>domain</strong>, satu berkas per domain. Tidak ada bagian
+mesin yang tahu apa itu kolom status atau siklus impor; domain database adalah
+klien pertama dari antarmuka itu, bukan kasus khusus di dalamnya.</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code>skills/ironclad/ironclad_core/
+├── __init__.py        Finding, Position, RuleMeta — bentuk yang dipakai semua domain
+├── engine.py          jalankan aturan, agregasi, hitung cakupan
+├── discovery.py       berkas mana yang dibaca, mana yang tak terbaca
+├── config.py          lapisan preset, deteksi stack
+├── report.py          keluaran manusia dan JSON
+├── rules.py           `ironclad rules`
+├── doctor.py          `ironclad doctor`
+├── cli.py             argparse, stdout, exit code — tidak lebih
+└── domains/
+    ├── database.py     DB-01 … DB-08
+    ├── api.py          API-01, API-02, API-07
+    ├── security.py     SEC-01 … SEC-03
+    └── architecture.py ARCH-01, ARCH-02
+</code></pre></div>
+<h2 id="menambah-aturan-ke-domain-yang-sudah-ada">Menambah aturan ke domain yang sudah ada</h2>
+<ol>
+<li><strong>Pilih ID berikutnya yang kosong.</strong> ID tidak pernah dipakai ulang walau
+   aturannya dicabut — berkas config atau baseline CI seseorang masih menyebut
+   nomor lama.</li>
+<li><strong>Tulis kelasnya</strong> di <code>domains/&lt;domain&gt;.py</code>. <code>Rule</code> menilai satu berkas;
+   <code>ProjectRule</code> menilai proyek dan berjalan sekali.</li>
+<li><strong>Deklarasikan apa yang dibacanya.</strong> <code>extensions</code> adalah klaim aturan, dan
+   gabungan semua klaim itulah yang dipindai. Aturan yang tidak mengklaim apa pun
+   tidak membaca apa pun.</li>
+<li><strong>Buktikan ia menyala.</strong> Fixture yang melanggar, dan — lebih penting —
+   fixture yang <em>terlihat</em> melanggar tapi benar. Separuh tes domain di repo ini
+   adalah kasus negatif, karena aturan yang menyala pada kode yang bekerja lebih
+   buruk daripada tidak ada aturan.</li>
+<li><strong>Set keparahan di keempat preset.</strong> Aturan tanpa entri jatuh ke default-nya
+   sendiri — itu cara sebuah preset <code>strict</code> diam-diam berhenti ketat.</li>
+<li><strong>Tulis batasnya.</strong> Tambahkan entri ke <code>LIMITS</code> di <code>ironclad_core/rules.py</code>
+   yang menyebut apa yang menolak ia putuskan. <code>ironclad rules explain</code> mencetaknya,
+   dan menuliskannya adalah yang menjaga aturan tetap jujur.</li>
+<li><strong>Jalankan semua gerbang</strong> sebelum commit:</li>
+</ol>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">python3 tests/test_regressions.py
+python3 tests/test_api_domain.py        # atau domain yang kamu sentuh
+python3 tests/capture_behaviour.py after &gt; /tmp/new.json
+python3 tests/capture_behaviour.py diff /tmp/baseline.json /tmp/new.json
+</code></pre></div>
+<p>Yang terakhir yang paling penting: ia membandingkan 108 perilaku tercatat dan
+harus melaporkan <code>0 changed</code> pada exit code dan temuan.</p>
+<h2 id="menambah-domain-baru">Menambah domain baru</h2>
+<p>Buat <code>domains/&lt;nama&gt;.py</code> dengan fungsi <code>register(reg)</code>. <code>load_all()</code> menemukannya
+dengan menelusuri paket, jadi tidak ada daftar yang perlu diperbarui dan tidak ada
+apa pun di inti yang perlu diedit.</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-python">DOMAIN = &quot;performance&quot;
+
+class Perf01NPlusOne(ProjectRule):
+    meta = RuleMeta(id=&quot;PERF-01&quot;, domain=DOMAIN,
+                    title=&quot;query di dalam loop&quot;,
+                    default_severity=&quot;warn&quot;, scope=&quot;project&quot;)
+    extensions = (&quot;.php&quot;, &quot;.js&quot;, &quot;.ts&quot;)
+
+    def applies_to(self, ctx): ...
+    def check(self, contexts, cfg): ...
+
+def register(reg):
+    reg.add(Perf01NPlusOne())
+</code></pre></div>
+<p>Tiga aturan untuk domain baru:</p>
+<ul>
+<li><strong>Satu ruang nama ID per domain.</strong> <code>SEC-01</code> tidak boleh bertabrakan dengan
+  <code>DB-01</code>, dan awalannya harus memberi tahu berkas mana yang dibuka.</li>
+<li><strong>Domain tidak mengimpor domain lain.</strong> Kalau <code>api</code> butuh sesuatu dari
+  <code>database</code>, hal itu milik <code>core</code>.</li>
+<li><strong>Sebut apa yang tidak bisa kamu baca.</strong> Domain yang diam-diam melewati satu
+  stack adalah cara seluruh alat ini kehilangan kepercayaan.</li>
+</ul>
+<h2 id="apa-yang-membuat-aturan-layak-ditambahkan">Apa yang membuat aturan layak ditambahkan</h2>
+<p>Diukur, bukan diasumsikan. Sebelum menulis aturan, jalankan pada repo nyata dan
+hitung apa yang akan ia laporkan. Tiga aturan yang diusulkan untuk proyek ini
+gugur setelah pengukuran itu:</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>Awalan</th>
-<th>Domain</th>
+<th>Usulan</th>
+<th>Terukur</th>
+<th>Putusan</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>DB-</code></td>
-<td>database &amp; schema</td>
+<td>"controller tidak boleh menyentuh model"</td>
+<td>6 dari 7 controller di repo Laravel nyata</td>
+<td>ditolak — itu idiom resmi framework</td>
 </tr>
 <tr>
-<td><code>API-</code></td>
-<td>kontrak HTTP: versi, bentuk error, pagination</td>
+<td>"test yang selalu skip"</td>
+<td>0 kemunculan di semua repo di mesin ini</td>
+<td>ditolak — aturan yang tak pernah menyala tak diketahui bekerja</td>
 </tr>
 <tr>
-<td><code>SEC-</code></td>
-<td>rahasia, otorisasi, validasi input</td>
-</tr>
-<tr>
-<td><code>PERF-</code></td>
-<td>query N+1, indeks, batas ukuran respons</td>
+<td>"test tidak sejajar modul"</td>
+<td>15 berkas test untuk 3 workspace</td>
+<td>ditolak — pemetaan 1:1 tak pernah ada</td>
 </tr>
 </tbody>
 </table></div>
-<p>Nomor tidak pernah dipakai ulang, walau aturannya dihapus. Kalau <code>DB-03</code> dicabut, nomor itu pensiun — bukan diberikan ke aturan baru, karena komentar review lama akan menunjuk aturan yang salah.</p>
-<h2 id="langkah-2-tambahkan-ke-kebijakan-repo">Langkah 2 — Tambahkan ke kebijakan repo</h2>
-<p><code>.agent/standards.md</code>:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-markdown">### API-01 — Every list endpoint is paginated
-
-An unpaginated list is a production incident waiting for a data set large enough.
-
-    ✗  GET /orders                → 200 [{...}]  (all rows)
-    ✓  GET /orders?cursor=…       → 200 {data, next_cursor}
-</code></pre></div>
-<p>Format yang terbukti berguna: <strong>satu paragraf alasan</strong>, lalu contoh salah/benar. Agent memakai contoh, reviewer memakai alasan.</p>
-<h2 id="langkah-3-tambahkan-ke-config-presets">Langkah 3 — Tambahkan ke config presets</h2>
-<p><code>assets/presets/balanced.yml</code>:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-yaml">rules:
-  API-01: error
-  API-02: warn
-</code></pre></div>
-<p>Tanpa entri di config, aturan tetap ada di dokumen tapi tidak pernah diperiksa — dan aturan yang tidak diperiksa akan dilupakan.</p>
-<h2 id="langkah-4-tulis-pemeriksanya">Langkah 4 — Tulis pemeriksanya</h2>
-<p>Dua pilihan, dari yang paling murah:</p>
-<p><strong>A. Regex, di checker yang sudah ada.</strong> Cocok untuk pola sintaksis (<code>app.get('/orders',</code> tanpa <code>.limit(</code>).</p>
-<p><strong>B. Skrip terpisah.</strong> Cocok kalau butuh parsing nyata. Simpan di <code>scripts/</code> skill, panggil dari CI yang sama:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">python3 scripts/check_schema.py . --json
-python3 scripts/check_api.py . --json
-</code></pre></div>
-<p>Jangan memaksakan semuanya ke satu skrip. Dua checker kecil yang jelas lebih baik daripada satu skrip yang menebak-nebak.</p>
-<h2 id="langkah-5-uji-dengan-fixture">Langkah 5 — Uji dengan fixture</h2>
-<p>Setiap aturan butuh dua berkas: satu yang harus gagal, satu yang harus lolos.</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code>examples/good.sql      → exit 0 di semua preset
-examples/bad.sql       → exit 1 di balanced &amp; strict
-</code></pre></div>
-<p>Tanpa keduanya, kamu tidak tahu apakah aturannya bekerja atau hanya kebetulan tidak menemukan apa pun. CI repo ini menguji keduanya setiap push.</p>
-<h2 id="contoh-nyata-aturan-keamanan">Contoh nyata: aturan keamanan</h2>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-markdown">### SEC-01 — No secrets in tracked files
-
-    ✗  const API_KEY = &quot;sk-live-...&quot;
-    ✓  const API_KEY = process.env.API_KEY
-</code></pre></div>
-<p>Pemeriksa sederhana: regex terhadap pola kunci populer, dilewati untuk <code>.env.example</code> dan fixture. Ini menangkap kesalahan yang paling mahal dan paling sering — dan tidak butuh AST.</p>
-<h2 id="batas-yang-perlu-diakui">Batas yang perlu diakui</h2>
-<p>Semakin jauh dari sintaksis, semakin lemah pemeriksaan otomatis:</p>
-<div class="tablewrap"><table>
-<thead>
-<tr>
-<th>Aturan</th>
-<th>Bisa diperiksa mesin?</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>enum</code> di schema</td>
-<td>Ya, andal</td>
-</tr>
-<tr>
-<td>Uang sebagai float</td>
-<td>Ya, andal</td>
-</tr>
-<tr>
-<td>Endpoint tanpa pagination</td>
-<td>Sebagian — hanya pola yang dikenal</td>
-</tr>
-<tr>
-<td>"Error response konsisten"</td>
-<td>Sulit; butuh skema OpenAPI</td>
-</tr>
-<tr>
-<td>"Arsitektur layer benar"</td>
-<td>Tidak. Ini tugas review, bukan linter</td>
-</tr>
-</tbody>
-</table></div>
-<p>Kalau sebuah aturan tidak bisa diperiksa, itu tidak berarti aturannya buruk — hanya berarti penegakannya manusia. Tulis tetap di <code>.agent/standards.md</code>, tandai sebagai <em>review-only</em>, supaya agent tetap membacanya sebagai niat tim.</p>
+<p>Sebuah aturan layak kalau ia:</p>
+<ol>
+<li><strong>deterministik</strong> — input sama, putusan sama, tanpa model di tengahnya</li>
+<li><strong>murah diperiksa</strong> — regex atau penelusuran graf, bukan build</li>
+<li><strong>mahal dibalik</strong> — keputusan skema atau arsitektur, bukan preferensi format</li>
+<li><strong>diam pada kode yang benar</strong> — satu-satunya uji yang menentukan</li>
+</ol>
+<p>Format itu urusan formatter. Gaya itu urusan linter dengan autofix. Ironclad untuk
+keputusan yang sampai produksi dan tinggal di sana.</p>
+<h2 id="yang-jangan-ditambahkan">Yang jangan ditambahkan</h2>
+<ul>
+<li>aturan yang butuh database berjalan</li>
+<li>aturan yang bergantung pada keadaan repo lain</li>
+<li>aturan yang butuh menebak niat aplikasi ("apakah status ini bermakna?")</li>
+<li>apa pun yang deskripsinya memuat "kadang-kadang"</li>
+<li>apa pun yang akan menyala pada sebagian besar repo nyata yang bekerja</li>
+</ul>
+<h2 id="mengubah-skill-nya-sendiri">Mengubah skill-nya sendiri</h2>
+<p><code>SKILL.md</code> adalah kontrak yang diikuti agent. Kalau kamu menambah aturan yang
+harus diterapkan agent <em>sebelum</em> menulis kode, ia harus muncul di dua tempat:</p>
+<ol>
+<li><code>references/&lt;domain&gt;.md</code> — alasannya</li>
+<li>bagian <strong>Procedure</strong> di <code>SKILL.md</code> — langkah yang dieksekusi agent</li>
+</ol>
+<p>Aturan yang hanya didokumentasikan di <code>references/</code> akan dibaca hanya kalau agent
+merasa perlu. Bagian procedure yang diikuti.</p>
         <nav class="pager" aria-label="Halaman berikutnya">
           <a class="prev" href="/ironclad/checker/"><span>Sebelumnya</span><b>Checker</b></a>
 <a class="next" href="/ironclad/frameworks/"><span>Berikutnya</span><b>Laravel, Prisma, dan backend lain</b></a>
@@ -199,13 +228,11 @@ examples/bad.sql       → exit 1 di balanced &amp; strict
 
       <aside class="toc" aria-label="Di halaman ini">
         <div class="navlabel"><span>§</span>Di halaman ini</div>
-        <ul><li class="lvl2"><a href="#langkah-1-pilih-awalan-dan-nomor">Langkah 1 — Pilih awalan dan nomor</a></li>
-<li class="lvl2"><a href="#langkah-2-tambahkan-ke-kebijakan-repo">Langkah 2 — Tambahkan ke kebijakan repo</a></li>
-<li class="lvl2"><a href="#langkah-3-tambahkan-ke-config-presets">Langkah 3 — Tambahkan ke config presets</a></li>
-<li class="lvl2"><a href="#langkah-4-tulis-pemeriksanya">Langkah 4 — Tulis pemeriksanya</a></li>
-<li class="lvl2"><a href="#langkah-5-uji-dengan-fixture">Langkah 5 — Uji dengan fixture</a></li>
-<li class="lvl2"><a href="#contoh-nyata-aturan-keamanan">Contoh nyata: aturan keamanan</a></li>
-<li class="lvl2"><a href="#batas-yang-perlu-diakui">Batas yang perlu diakui</a></li></ul>
+        <ul><li class="lvl2"><a href="#menambah-aturan-ke-domain-yang-sudah-ada">Menambah aturan ke domain yang sudah ada</a></li>
+<li class="lvl2"><a href="#menambah-domain-baru">Menambah domain baru</a></li>
+<li class="lvl2"><a href="#apa-yang-membuat-aturan-layak-ditambahkan">Apa yang membuat aturan layak ditambahkan</a></li>
+<li class="lvl2"><a href="#yang-jangan-ditambahkan">Yang jangan ditambahkan</a></li>
+<li class="lvl2"><a href="#mengubah-skill-nya-sendiri">Mengubah skill-nya sendiri</a></li></ul>
       </aside>
     </div>
   </main>

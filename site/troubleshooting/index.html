@@ -53,7 +53,7 @@
 <li><a href="/ironclad/presets/">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/">Aturan DB-01…DB-08</a></li>
+<li><a href="/ironclad/rules/">Aturan</a></li>
 <li><a href="/ironclad/checker/">Checker</a></li>
 <li><a href="/ironclad/extending/">Memperluas</a></li>
 <li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
@@ -127,6 +127,16 @@ description: Use when several developers share one database — make sure everyo
 </tr>
 </tbody>
 </table></div>
+<h2 id="mulai-dari-sini-ironclad-doctor">Mulai dari sini: <code>ironclad doctor</code></h2>
+<p>Sebelum membaca halaman ini sampai habis, jalankan itu. Ia menjawab empat
+pertanyaan yang membuat halaman ini ada: apakah instalasinya lengkap, lapisan
+config mana yang dibaca, berkas apa yang terlihat, dan aturan mana yang benar-benar
+akan menyala.</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">ironclad doctor
+</code></pre></div>
+<p>Exit <code>3</code> berarti instalasinya sendiri rusak — jalankan ulang installer. Exit <code>1</code>
+berarti instalasinya baik dan reponya yang butuh perhatian. Ia tidak pernah menulis
+apa pun.</p>
 <h2 id="unknown-preset-strict"><code>unknown preset strict</code></h2>
 <p><strong>Gejala:</strong> checker jalan, tapi <code>--preset</code> apa pun ditolak.</p>
 <p><strong>Penyebab:</strong> <code>scripts/presets/</code> tidak ikut tersalin ke repo. Checker mencari preset di dua tempat — <code>scripts/presets/</code> (saat disalin ke repo) dan <code>assets/presets/</code> (saat jalan dari skill).</p>
@@ -135,7 +145,7 @@ description: Use when several developers share one database — make sure everyo
 <p><strong>Perbaikan:</strong></p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.10.2 --project . --preset balanced
 </code></pre></div>
-<h2 id="no-sqlphpprisma-files-found"><code>no .sql/.php/.prisma files found</code></h2>
+<h2 id="no-files-any-rule-can-read-found"><code>no files any rule can read found</code></h2>
 <p><strong>Gejala:</strong> checker bilang tidak ada berkas, padahal repo penuh migration.</p>
 <p><strong>Penyebab:</strong> path yang diberikan menunjuk folder yang salah, atau folder dilewati otomatis (<code>node_modules</code>, <code>vendor</code>, <code>dist</code>, <code>build</code>, <code>.git</code>).</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">python3 scripts/check_schema.py . --json | head -5     # cek &quot;files&quot;
@@ -152,6 +162,19 @@ CHANGED=$(git diff --name-only --diff-filter=d origin/${{ github.base_ref }}...H
 [ -z &quot;$CHANGED&quot; ] &amp;&amp; exit 0
 python scripts/check_schema.py $CHANGED
 </code></pre></div>
+<h2 id="aturan-menyala-pada-kode-yang-saya-tahu-benar">Aturan menyala pada kode yang saya tahu benar</h2>
+<p>Dua kemungkinan, dan jawabannya berbeda.</p>
+<p><strong>Kena batas aturannya.</strong> Baca dulu:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">ironclad rules explain ARCH-01
+</code></pre></div>
+<p>Bagian <em>apa yang menolak ia putuskan</em> ada persis untuk kasus ini. Kalau kodemu di
+luar yang bisa ia lihat, turunkan tanpa mematikannya — di <code>.agent/standards.yml</code>:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-yaml">rules:
+  ARCH-01: warn        # atau: off
+</code></pre></div>
+<p><strong>Aturannya yang salah.</strong> Itu bug yang layak dilaporkan, dan laporan yang berguna
+memuat berkas, baris, dan kenapa kodenya benar. Beberapa aturan di alat ini
+dipersempit atau dibuang justru karena ada yang melaporkan seperti itu.</p>
 <h2 id="false-positive-pada-kolom-yang-bukan-status">False positive pada kolom yang bukan status</h2>
 <p><strong>Gejala:</strong> <code>mimeType</code>, <code>prototype</code>, <code>fileType</code> dilaporkan sebagai kolom status.</p>
 <p>Checker mencocokkan kata utuh per segmen, jadi kasus umum sudah ditangani. Kalau kamu menemukan yang lolos, dua pilihan:</p>
@@ -236,9 +259,11 @@ installer mencetak baris yang perlu ditambahkan ke <code>~/.bashrc</code>.</p>
       <aside class="toc" aria-label="Di halaman ini">
         <div class="navlabel"><span>§</span>Di halaman ini</div>
         <ul><li class="lvl2"><a href="#skill-tidak-terdeteksi">Skill tidak terdeteksi</a></li>
+<li class="lvl2"><a href="#mulai-dari-sini-ironclad-doctor">Mulai dari sini: ironclad doctor</a></li>
 <li class="lvl2"><a href="#unknown-preset-strict">unknown preset strict</a></li>
-<li class="lvl2"><a href="#no-sqlphpprisma-files-found">no .sql/.php/.prisma files found</a></li>
+<li class="lvl2"><a href="#no-files-any-rule-can-read-found">no files any rule can read found</a></li>
 <li class="lvl2"><a href="#ci-merah-di-semua-pr">CI merah di semua PR</a></li>
+<li class="lvl2"><a href="#aturan-menyala-pada-kode-yang-saya-tahu-benar">Aturan menyala pada kode yang saya tahu benar</a></li>
 <li class="lvl2"><a href="#false-positive-pada-kolom-yang-bukan-status">False positive pada kolom yang bukan status</a></li>
 <li class="lvl2"><a href="#angka-berbeda-antar-mesin">Angka berbeda antar mesin</a></li>
 <li class="lvl2"><a href="#git-push-ditolak-fetch-first">git push ditolak fetch first</a></li>

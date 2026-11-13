@@ -130,13 +130,25 @@ def split_frontmatter(text):
     return meta, body
 
 
+def substitute_version(text: str) -> str:
+    """Replace {{VERSION}} with the version read from SKILL.md.
+
+    The pages hardcoded `#v0.10.2` in 71 places. That is a number nobody updates
+    until someone notices the install command 404s, and by then it is in a search
+    result. Reading it at build time means the docs cannot disagree with the
+    package — and `check_version_agreement()` already fails the build when
+    SKILL.md and package.json drift.
+    """
+    return text.replace("{{VERSION}}", VERSION)
+
+
 def collect(lang):
     pages = []
     folder = PAGES / lang
     if not folder.is_dir():
         return pages
     for path in sorted(folder.glob("*.md")):
-        meta, body = split_frontmatter(path.read_text())
+        meta, body = split_frontmatter(substitute_version(path.read_text()))
         slug = meta.get("slug") or path.stem
         pages.append({
             "slug": slug,

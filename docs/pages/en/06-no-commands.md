@@ -14,7 +14,7 @@ you are done.
 ## 1. Install
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2
+npx github:wilsench/ironclad#v{{VERSION}}
 ```
 
 ## 2. Done — actually done
@@ -132,7 +132,7 @@ codebase — it does not stop to interrogate you about presets.
 ironclad init --no-agent-files
 ```
 
-Or at install time: `npx github:wilsench/ironclad#v0.10.2 --no-agent-files`.
+Or at install time: `npx github:wilsench/ironclad#v{{VERSION}} --no-agent-files`.
 
 Without that block the agent only knows the rules if it loads the skill — so you
 are back to a world that needs commands. The option exists for repos that already

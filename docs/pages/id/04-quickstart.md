@@ -14,7 +14,7 @@ diedit tangan.
 ## 1. Pasang
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2
+npx github:wilsench/ironclad#v{{VERSION}}
 ```
 
 Selesai. Skill ada di `~/.agents/skills/ironclad/`, perintah `ironclad` ada di

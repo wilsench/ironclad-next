@@ -29,7 +29,7 @@ Kalau kamu ingin memastikan, sebut namanya: `pakai skill ironclad`.
 Ya:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2
+npx github:wilsench/ironclad#v{{VERSION}}
 ```
 
 Itu saja. Tidak ada langkah kedua — agent sudah bertanya sendiri di repo mana pun.
@@ -47,10 +47,10 @@ Satu perintah, tanpa clone, tanpa baca dokumen — dan tanpa `ironclad init` kec
 Ya, dan itu target utamanya. Enam target: Hermes, Claude Code, Codex, Cursor, opencode, Antigravity. Formatnya standar Agent Skills (`SKILL.md`), bukan format khusus Hermes.
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2  --all              # semua agent yang terdeteksi
-npx github:wilsench/ironclad#v0.10.2  --target claude
-npx github:wilsench/ironclad#v0.10.2  --target gemini    # Antigravity global
-npx github:wilsench/ironclad#v0.10.2  --target opencode
+npx github:wilsench/ironclad#v{{VERSION}}  --all              # semua agent yang terdeteksi
+npx github:wilsench/ironclad#v{{VERSION}}  --target claude
+npx github:wilsench/ironclad#v{{VERSION}}  --target gemini    # Antigravity global
+npx github:wilsench/ironclad#v{{VERSION}}  --target opencode
 ```
 
 ## Bisa langsung pakai `wilsench/ironclad`?
@@ -61,7 +61,7 @@ Untuk Hermes, ya — begitu repo GitHub-nya terbit:
 hermes skills install wilsench/ironclad/skills/ironclad
 ```
 
-Untuk agent lain, pakai `npx github:wilsench/ironclad#v0.10.2` — itu menarik paket langsung dari repo GitHub tanpa publish ke npm. Kalau tidak ada Node, mirror `install.sh` di `wilsench.my.id` menjalankan kode yang sama persis.
+Untuk agent lain, pakai `npx github:wilsench/ironclad#v{{VERSION}}` — itu menarik paket langsung dari repo GitHub tanpa publish ke npm. Kalau tidak ada Node, mirror `install.sh` di `wilsench.my.id` menjalankan kode yang sama persis.
 
 ## Apakah `curl | bash` aman?
 
@@ -136,7 +136,7 @@ manual.
 Bisa. Pakai preset `coherence`:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check . --preset coherence
+npx github:wilsench/ironclad#v{{VERSION}} check . --preset coherence
 ```
 
 Di preset itu tidak ada gaya yang dihukum: `enum`, teks berkode, dan integer + lookup
@@ -147,7 +147,7 @@ kamu tidak perlu sama dengan siapa pun.
 ## Bisa coba tanpa install?
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check .
+npx github:wilsench/ironclad#v{{VERSION}} check .
 ```
 
 Itu menjalankan pemeriksa dan berhenti. Tidak ada file yang ditulis, tidak ada

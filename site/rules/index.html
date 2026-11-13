@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aturan DB-01…DB-08 — Ironclad</title>
-<meta name="description" content="Delapan aturan database, masing-masing dengan contoh salah dan benar yang benar-benar diuji checker. DB-08 adalah aturan yang paling menjawab masalah tim.">
+<title>Aturan — Ironclad</title>
+<meta name="description" content="Enam belas aturan di empat domain, masing-masing dengan contoh salah yang benar-benar diuji checker — plus catatan apa yang menolak ia putuskan.">
 <link rel="canonical" href="https://wilsench.my.id/ironclad/rules/">
 <link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad/rules/">
 <link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad/en/rules/">
@@ -53,7 +53,7 @@
 <li><a href="/ironclad/presets/">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/" class="active" aria-current="page">Aturan DB-01…DB-08</a></li>
+<li><a href="/ironclad/rules/" class="active" aria-current="page">Aturan</a></li>
 <li><a href="/ironclad/checker/">Checker</a></li>
 <li><a href="/ironclad/extending/">Memperluas</a></li>
 <li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
@@ -78,7 +78,7 @@
       <button class="burger" type="button" id="burger" aria-label="Buka menu" aria-expanded="false">
         <span></span><span></span>
       </button>
-      <span class="crumb">Referensi / <b>Aturan DB-01…DB-08</b></span>
+      <span class="crumb">Referensi / <b>Aturan</b></span>
       <a class="langsw-mini" href="/ironclad/en/rules/" aria-label="Bahasa">EN</a>
       <button class="searchmini" type="button" id="searchmini" aria-label="Cari">/<span>Cari</span></button>
     </header>
@@ -140,6 +140,100 @@
 </tr>
 </tbody>
 </table></div>
+<h3 id="api-bagaimana-endpoint-menjawab">API — bagaimana endpoint menjawab</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Aturan</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API-01</td>
+<td>Gaya penamaan endpoint lebih dari satu dalam satu router</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+<tr>
+<td>API-02</td>
+<td>Payload error dikirim dengan status 2xx</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+<tr>
+<td>API-07</td>
+<td>Rute yang sama dideklarasikan dua kali</td>
+<td><span class="sev sev-error">error</span></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="keamanan-apa-yang-bocor-dan-apa-yang-hampir-bocor">Keamanan — apa yang bocor, dan apa yang hampir bocor</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Aturan</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SEC-01</td>
+<td>Kredensial di berkas yang bisa ikut terkirim git</td>
+<td>warn (error bila terbukti dilacak)</td>
+</tr>
+<tr>
+<td>SEC-02</td>
+<td>Kredensial ditulis langsung di kode</td>
+<td><span class="sev sev-error">error</span></td>
+</tr>
+<tr>
+<td>SEC-03</td>
+<td><code>.env.example</code> tidak lagi cocok dengan <code>.env</code></td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="arsitektur-bentuk-proyek-dibaca-dari-impornya">Arsitektur — bentuk proyek, dibaca dari impornya</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Aturan</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ARCH-01</td>
+<td>Berkas saling mengimpor dalam siklus</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+<tr>
+<td>ARCH-02</td>
+<td>Impor menunjuk berkas yang tidak ada</td>
+<td><span class="sev sev-warn">warn</span></td>
+</tr>
+</tbody>
+</table></div>
+<p>Rincian tiap domain ada di <code>references/</code> di dalam skill, dan
+<code>ironclad rules explain &lt;ID&gt;</code> mencetak alasan yang sama plus <strong>apa yang menolak
+ia putuskan</strong> — bagian yang paling berguna saat kamu tidak setuju dengan temuan.</p>
+<h2 id="kenapa-empat-domain-ini-dan-tidak-lebih">Kenapa empat domain ini, dan tidak lebih</h2>
+<p>Satu set aturan adalah klaim tentang apa yang bisa diperiksa dengan jujur hanya
+dari kode sumber. Masing-masing diukur pada repo nyata sebelum dikirim, dan
+beberapa usulan aturan gugur karena angkanya berkata tidak:</p>
+<ul>
+<li>"controller tidak boleh menyentuh model" menyala di <strong>6 dari 7</strong> controller
+  Laravel sungguhan — itu idiom resmi framework, bukan cacat.</li>
+<li>"test yang selalu skip" menyala <strong>nol</strong> kali di seluruh repo pada mesin yang
+  membangun alat ini. Aturan yang belum pernah menyala adalah aturan yang belum
+  diketahui bekerja.</li>
+<li>"satu berkas test per modul" mengasumsikan pemetaan yang tak pernah ada di
+  monorepo sungguhan: 15 berkas test untuk tiga workspace.</li>
+</ul>
+<p>Ini bukan pendapat soal gaya. Ini sisa dari pengukuran, dan pengukurannya tercatat
+di <code>docs/PHASE2_API_DOMAIN.md</code> sampai <code>docs/PHASE5_DX.md</code> di repositori.</p>
 <hr />
 <h2 id="db-01-tidak-ada-enum-native">DB-01 — Tidak ada <code>enum</code> native</h2>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-sql">-- ✗ ditolak
@@ -298,6 +392,10 @@ python3 scripts/check_schema.py examples/bad.sql --preset strict
       <aside class="toc" aria-label="Di halaman ini">
         <div class="navlabel"><span>§</span>Di halaman ini</div>
         <ul><li class="lvl2"><a href="#ringkasan">Ringkasan</a></li>
+<li class="lvl3"><a href="#api-bagaimana-endpoint-menjawab">API — bagaimana endpoint menjawab</a></li>
+<li class="lvl3"><a href="#keamanan-apa-yang-bocor-dan-apa-yang-hampir-bocor">Keamanan — apa yang bocor, dan apa yang hampir bocor</a></li>
+<li class="lvl3"><a href="#arsitektur-bentuk-proyek-dibaca-dari-impornya">Arsitektur — bentuk proyek, dibaca dari impornya</a></li>
+<li class="lvl2"><a href="#kenapa-empat-domain-ini-dan-tidak-lebih">Kenapa empat domain ini, dan tidak lebih</a></li>
 <li class="lvl2"><a href="#db-01-tidak-ada-enum-native">DB-01 — Tidak ada enum native</a></li>
 <li class="lvl2"><a href="#db-02-tidak-ada-magic-number-pada-kolom-status">DB-02 — Tidak ada magic number pada kolom status</a></li>
 <li class="lvl2"><a href="#db-03-integer-status-wajib-punya-fk-atau-check">DB-03 — Integer status wajib punya FK atau CHECK</a></li>

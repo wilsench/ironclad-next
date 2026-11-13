@@ -1,9 +1,9 @@
 ---
-title: Rules DB-01…DB-08
+title: Rules
 slug: rules
 group: Reference
 order: 20
-summary: Eight database rules, each with a wrong and a right example the checker actually tests. DB-08 is the one that answers the team problem.
+summary: Sixteen rules across four domains, each with the wrong example the checker actually tests — and a note on what each one refuses to decide.
 ---
 
 # Rules
@@ -27,6 +27,50 @@ everything is `warn`.
 | DB-06 | No money as `float`/`double` | warn |
 | DB-07 | No `timestamp` without a timezone | warn |
 | DB-08 | One status style per project — no mixing enum and integer | warn |
+
+### API — how the endpoints answer
+
+| ID | Rule | Status |
+|---|---|---|
+| API-01 | Endpoint paths named in more than one style | warn |
+| API-02 | An error payload returned under a 2xx status | warn |
+| API-07 | The same route declared twice | error |
+
+### Security — what leaked, and what is about to
+
+| ID | Rule | Status |
+|---|---|---|
+| SEC-01 | A credential in a file git could ship | warn (error when tracked) |
+| SEC-02 | A credential hardcoded in source | error |
+| SEC-03 | `.env.example` and `.env` disagree | warn |
+
+### Architecture — the shape of the project
+
+| ID | Rule | Status |
+|---|---|---|
+| ARCH-01 | Files import each other in a cycle | warn |
+| ARCH-02 | An import points at a file that does not exist | warn |
+
+Full detail for each domain is in `references/` inside the skill, and
+`ironclad rules explain <ID>` prints the same reasoning plus **what the rule
+refuses to decide** — the part that matters when you disagree with a finding.
+
+## Why these four domains and not more
+
+A rule set is a claim about what can be checked honestly from source alone. Each
+of these was measured on real repositories before it shipped, and several
+proposed rules were dropped because the measurement said no:
+
+- "a controller must not touch a model" fired on **6 of 7** controllers in a real
+  Laravel repo — that is the framework's documented idiom, not a defect.
+- "a skipped test" fired **zero** times across every repo on the machine that
+  built this tool. A rule that has never fired is a rule nobody knows works.
+- "a test file per module" assumed a mapping that never existed in a real
+  monorepo: 15 test files across three workspaces.
+
+These are not opinions about style. They are the residue of measurements, and the
+measurements are recorded in `docs/PHASE2_API_DOMAIN.md` through
+`docs/PHASE5_DX.md` in the repository.
 
 ## DB-01 — no enum columns
 

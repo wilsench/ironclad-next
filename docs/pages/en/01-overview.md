@@ -99,7 +99,7 @@ office had.
 ## Try it without installing
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check .
+npx github:wilsench/ironclad#v{{VERSION}} check .
 ```
 
 Runs the checker, prints findings, exits. **No files written, no agent config
@@ -109,7 +109,7 @@ need to install anything.
 If you want the neutral reading — the one that does not consider enums a defect:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check . --preset coherence
+npx github:wilsench/ironclad#v{{VERSION}} check . --preset coherence
 ```
 
 ## If you are not the one writing the code
@@ -140,7 +140,10 @@ or what is in the YAML file.
 - **It is not a replacement for a programmer.** It writes no features, fixes no bugs.
 - **It is not a replacement for review.** It catches patterns; it cannot know whether
   your business logic is right.
-- **It is not a security tool.** It does not look for data leaks or access holes.
+- **It is not a security audit.** It checks three things a file can prove — a
+  credential in a file git could ship, a credential hardcoded in source, and an
+  `.env.example` that has drifted from `.env`. It does not find access-control
+  holes, injection, or anything that needs the app running.
 - **It does not change how your app looks.** Nothing to do with design.
 - **It sends no data anywhere.** Everything runs on your own machine.
 
@@ -148,9 +151,13 @@ or what is in the YAML file.
 
 - **The checker matches patterns, it does not understand code.** It can flag
   something correct and miss something wrong. A human stays the last layer.
-- **The scope is deliberately narrow.** Eight patterns about how status, money, and
-  time are stored. Not two hundred database rules. A tool that tries to catch
-  everything loses to a dedicated linter, and nobody installs it twice.
+- **The scope is deliberately narrow.** Sixteen rules across four domains — how
+  status, money and time are stored; how endpoints answer; what leaked; and how
+  the modules depend on each other. Not two hundred rules. A tool that tries to
+  catch everything loses to a dedicated linter, and nobody installs it twice.
+- **Several rules were dropped after measuring them.** "A controller must not
+  touch a model" fired on 6 of 7 controllers in a real Laravel repo. It is not in
+  the tool.
 - **Unsupported frameworks stop honestly** (`exit 2`) instead of pretending to be green.
 - **It cannot force anyone to read.** If CI is not wired up and
   `.agent/standards.md` is ignored, nothing catches it. The gate does the work, not

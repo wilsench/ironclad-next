@@ -53,7 +53,7 @@
 <li><a href="/ironclad/en/presets/" class="active" aria-current="page">Presets — how hard it bites</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Reference</div><ul>
-<li><a href="/ironclad/en/rules/">Rules DB-01…DB-08</a></li>
+<li><a href="/ironclad/en/rules/">Rules</a></li>
 <li><a href="/ironclad/en/checker/">Checker</a></li>
 <li><a href="/ironclad/en/extending/">Extending</a></li>
 <li><a href="/ironclad/en/frameworks/">Laravel, Prisma, and other backends</a></li>
@@ -112,14 +112,14 @@ written. See <a href="/ironclad/en/en/modes/">Modes</a>.</p>
 </tr>
 <tr>
 <td><code>coherence</code></td>
-<td>DB-08 (mixed styles)</td>
+<td>DB-08, API-07, SEC-01, SEC-02</td>
 <td>the rest</td>
 <td><strong>anyone</strong> who does not want a style imposed</td>
 </tr>
 <tr>
 <td><code>balanced</code></td>
-<td>DB-01, DB-02, DB-04</td>
-<td>DB-03, DB-05…DB-08</td>
+<td>DB-01, DB-02, DB-04, API-07, SEC-02</td>
+<td>DB-03, DB-05…DB-08, API-01, API-02, SEC-01, SEC-03, ARCH-01, ARCH-02</td>
 <td>normal product work; the office default</td>
 </tr>
 <tr>
@@ -131,11 +131,14 @@ written. See <a href="/ironclad/en/en/modes/">Modes</a>.</p>
 </tbody>
 </table></div>
 <p>Real numbers from the same fixture (<code>examples/bad.sql</code>):</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>balanced           errors=3 warns=5
-coherence          errors=2 warns=6
-legacy-friendly    errors=0 warns=8
-strict             errors=8 warns=0
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>balanced           errors=6 warns=11
+coherence          errors=5 warns=11
+legacy-friendly    errors=0 warns=15
+strict             errors=17 warns=0
 </code></pre></div>
+<p><code>legacy-friendly</code> turns the architecture rules off entirely: an older codebase has
+cycles it will not fix this quarter, and a first run that opens with forty of them
+is a first run nobody repeats.</p>
 <p>Note that <code>coherence</code> has <strong>fewer</strong> errors than <code>balanced</code>, and that is the point.
 Under that preset an enum is not punished. Only DB-08 fails — the same concept
 stored two different ways in one project.</p>
@@ -247,7 +250,7 @@ line of a PR, the rule does not need turning off yet.</p>
 instead of crashing.</p>
         <nav class="pager" aria-label="Next page">
           <a class="prev" href="/ironclad/en/three-layers/"><span>Previous</span><b>Three layers</b></a>
-<a class="next" href="/ironclad/en/rules/"><span>Next</span><b>Rules DB-01…DB-08</b></a>
+<a class="next" href="/ironclad/en/rules/"><span>Next</span><b>Rules</b></a>
         </nav>
         <footer class="docfoot">
           <span>Ironclad v0.10.2-0cff1a72</span>

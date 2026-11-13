@@ -101,7 +101,7 @@ persis masalah yang dihadapi kantor kami.
 ## Coba tanpa install
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check .
+npx github:wilsench/ironclad#v{{VERSION}} check .
 ```
 
 Menjalankan pemeriksa, mencetak temuan, lalu berhenti. **Tidak menulis berkas,
@@ -111,7 +111,7 @@ konsisten dan kamu tidak perlu memasang apa pun.
 Kalau kamu ingin mencoba pandangan "netral" — yang tidak menganggap enum salah:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 check . --preset coherence
+npx github:wilsench/ironclad#v{{VERSION}} check . --preset coherence
 ```
 
 ## Kalau kamu bukan yang menulis kode
@@ -143,7 +143,11 @@ atau isi berkas YAML-nya.
 - **Bukan pengganti programmer.** Tidak menulis fitur, tidak memperbaiki bug.
 - **Bukan pengganti review.** Ia menangkap pola; ia tidak tahu apakah logika
   bisnismu benar.
-- **Bukan alat keamanan.** Tidak memeriksa kebocoran data atau celah akses.
+- **Bukan audit keamanan.** Ia memeriksa tiga hal yang bisa dibuktikan dari
+  berkas — kredensial di berkas yang bisa ikut terkirim git, kredensial yang
+  ditulis langsung di kode, dan `.env.example` yang sudah melenceng dari `.env`.
+  Ia tidak menemukan celah kontrol akses, injeksi, atau apa pun yang butuh
+  aplikasi berjalan.
 - **Tidak mengubah tampilan aplikasi.** Tidak ada hubungannya dengan desain.
 - **Tidak mengirim data ke mana pun.** Semuanya berjalan di komputermu sendiri.
 
@@ -151,10 +155,14 @@ atau isi berkas YAML-nya.
 
 - **Pemeriksanya mencocokkan pola, bukan memahami kode.** Ia bisa salah menandai
   yang benar dan melewatkan yang salah. Manusia tetap lapis terakhir.
-- **Cakupannya sempit dengan sengaja.** Delapan pola tentang cara menyimpan
-  status, uang, dan waktu. Bukan dua ratus aturan database. Alat yang mencoba
-  menangkap segalanya kalah dari linter khusus, dan tidak ada yang memasangnya
-  dua kali.
+- **Cakupannya sempit dengan sengaja.** Enam belas aturan di empat domain — cara
+  menyimpan status, uang, dan waktu; cara endpoint menjawab; apa yang bocor; dan
+  bagaimana modul saling bergantung. Bukan dua ratus aturan. Alat yang mencoba
+  menangkap segalanya kalah dari linter khusus, dan tak ada yang memasangnya dua
+  kali.
+- **Beberapa aturan gugur setelah diukur.** "Controller tidak boleh menyentuh
+  model" menyala di 6 dari 7 controller Laravel sungguhan. Aturan itu tidak ada
+  di alat ini.
 - **Framework yang belum didukung akan berhenti dengan jujur** (`exit 2`), bukan
   berpura-pura hijau.
 - **Ia tidak bisa memaksa orang membaca.** Kalau CI tidak dipasang dan

@@ -20,17 +20,17 @@ kalau semuanya merah — jadi tingkatnya bisa disetel.
 | Preset | Memblokir | Hanya warning | Untuk |
 |---|---|---|---|
 | `legacy-friendly` | — | semua | repo tua dengan utang teknis |
-| `coherence` | DB-08 (gaya campur) | sisanya | **siapa saja** yang tidak mau dipaksa satu gaya |
-| `balanced` | DB-01, DB-02, DB-04 | DB-03, DB-05…DB-08 | pekerjaan produk normal; default kantor |
+| `coherence` | DB-08, API-07, SEC-01, SEC-02 | sisanya | **siapa saja** yang tidak mau dipaksa satu gaya |
+| `balanced` | DB-01, DB-02, DB-04, API-07, SEC-02 | DB-03, DB-05…DB-08, API-01, API-02, SEC-01, SEC-03, ARCH-01, ARCH-02 | pekerjaan produk normal; default kantor |
 | `strict` | semua | — | keuangan, kesehatan, sistem yang diaudit |
 
 Angka nyata dari fixture yang sama (`examples/bad.sql`):
 
 ```
-balanced           errors=3 warns=5
-coherence          errors=2 warns=6
-legacy-friendly    errors=0 warns=8
-strict             errors=8 warns=0
+balanced           errors=6 warns=11
+coherence          errors=5 warns=11
+legacy-friendly    errors=0 warns=15
+strict             errors=17 warns=0
 ```
 
 Perhatikan `coherence`: ia punya **lebih sedikit** error daripada `balanced`, dan
@@ -71,7 +71,7 @@ perintah yang menggantung lebih buruk daripada pilihan yang bisa diubah.
 Kalau kamu ingin repo langsung memakai preset tertentu:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 --project . --preset strict
+npx github:wilsench/ironclad#v{{VERSION}} --project . --preset strict
 ```
 
 Atau belakangan, dari dalam repo:

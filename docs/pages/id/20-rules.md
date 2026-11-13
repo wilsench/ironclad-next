@@ -1,9 +1,9 @@
 ---
-title: Aturan DB-01…DB-08
+title: Aturan
 slug: rules
 group: Referensi
 order: 20
-summary: Delapan aturan database, masing-masing dengan contoh salah dan benar yang benar-benar diuji checker. DB-08 adalah aturan yang paling menjawab masalah tim.
+summary: Enam belas aturan di empat domain, masing-masing dengan contoh salah yang benar-benar diuji checker — plus catatan apa yang menolak ia putuskan.
 ---
 
 # Aturan
@@ -24,6 +24,50 @@ Kolom **Status** di bawah adalah perilaku pada preset `balanced` (default). Pada
 | DB-06 | Uang harus eksak — `numeric` skala tetap atau `bigint` satuan terkecil, bukan float | warn |
 | DB-07 | Timestamp wajib membawa zona waktu | warn |
 | DB-08 | Satu proyek satu gaya status — tidak campur enum dan integer | warn |
+
+### API — bagaimana endpoint menjawab
+
+| ID | Aturan | Status |
+|---|---|---|
+| API-01 | Gaya penamaan endpoint lebih dari satu dalam satu router | warn |
+| API-02 | Payload error dikirim dengan status 2xx | warn |
+| API-07 | Rute yang sama dideklarasikan dua kali | error |
+
+### Keamanan — apa yang bocor, dan apa yang hampir bocor
+
+| ID | Aturan | Status |
+|---|---|---|
+| SEC-01 | Kredensial di berkas yang bisa ikut terkirim git | warn (error bila terbukti dilacak) |
+| SEC-02 | Kredensial ditulis langsung di kode | error |
+| SEC-03 | `.env.example` tidak lagi cocok dengan `.env` | warn |
+
+### Arsitektur — bentuk proyek, dibaca dari impornya
+
+| ID | Aturan | Status |
+|---|---|---|
+| ARCH-01 | Berkas saling mengimpor dalam siklus | warn |
+| ARCH-02 | Impor menunjuk berkas yang tidak ada | warn |
+
+Rincian tiap domain ada di `references/` di dalam skill, dan
+`ironclad rules explain <ID>` mencetak alasan yang sama plus **apa yang menolak
+ia putuskan** — bagian yang paling berguna saat kamu tidak setuju dengan temuan.
+
+## Kenapa empat domain ini, dan tidak lebih
+
+Satu set aturan adalah klaim tentang apa yang bisa diperiksa dengan jujur hanya
+dari kode sumber. Masing-masing diukur pada repo nyata sebelum dikirim, dan
+beberapa usulan aturan gugur karena angkanya berkata tidak:
+
+- "controller tidak boleh menyentuh model" menyala di **6 dari 7** controller
+  Laravel sungguhan — itu idiom resmi framework, bukan cacat.
+- "test yang selalu skip" menyala **nol** kali di seluruh repo pada mesin yang
+  membangun alat ini. Aturan yang belum pernah menyala adalah aturan yang belum
+  diketahui bekerja.
+- "satu berkas test per modul" mengasumsikan pemetaan yang tak pernah ada di
+  monorepo sungguhan: 15 berkas test untuk tiga workspace.
+
+Ini bukan pendapat soal gaya. Ini sisa dari pengukuran, dan pengukurannya tercatat
+di `docs/PHASE2_API_DOMAIN.md` sampai `docs/PHASE5_DX.md` di repositori.
 
 ---
 

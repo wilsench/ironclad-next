@@ -8,9 +8,13 @@ summary: Full reference for check_schema.py — arguments, exit codes, JSON outp
 
 # Checker
 
-`scripts/check_schema.py` is a single-file Python script with no dependencies
-beyond the standard library. It scans `.sql`, `.php` (Laravel migrations), and
-`.prisma` files.
+`scripts/check_schema.py` is the entry point over `ironclad_core/`, a small
+package with no dependencies beyond the standard library. It reads schema and
+source files across four domains — see [Rules](/en/rules/) for the current list.
+
+The entry point stayed a single file on purpose: a repo that copied the checker
+in with `--with-checker` can still run `python3 scripts/check_schema.py`, and the
+engine travels beside it as `scripts/ironclad_core/`.
 
 ## Usage
 
@@ -35,6 +39,15 @@ python3 scripts/check_schema.py . --preset balanced
 | `--json` | JSON on stdout instead of the human report |
 | `--list-presets` | print the presets it can see, with error/warn counts |
 
+Three more commands read the same config layering as `check`, so what they show is
+what a run will do:
+
+```bash
+ironclad doctor                 # why is this not doing what I expected?
+ironclad rules                  # every rule and its effective severity
+ironclad rules explain SEC-01   # what it looks for, and what it refuses to decide
+```
+
 Precedence, weakest to strongest:
 
 ```
@@ -47,8 +60,13 @@ overrides per-rule severity. A file that contains nothing but `name: coherence`
 (exactly what `ironclad preset` writes) is read as that preset, so both forms
 are valid: a name alone, or explicit rules.
 
-Without `--preset`, the checker looks for `.agent/standards.yml` and walks up
-from the target directory. The report's last line tells you which one it used —
+Without `--preset`, the checker looks for `.agent/standards.yml` **inside the
+target**. It used to walk up parent directories, which meant checking
+`~/projects/app` silently picked up `~/.agent/standards.yml` — a policy for a
+different project, or for the machine. A parent policy is now an explicit act:
+`--config ../.agent/standards.yml`.
+
+The report's last line tells you which one it used —
 `preset: balanced (.agent/standards.yml)` or `preset: strict (preset:strict)`.
 
 ## Exit codes
@@ -57,7 +75,8 @@ from the target directory. The report's last line tells you which one it used �
 |---|---|
 | `0` | clean, or only warnings on a preset that does not block them |
 | `1` | at least one blocking error |
-| `2` | misuse — unknown preset, config not found, no files |
+| `2` | misuse — unknown preset, config not found, no files to check |
+| `3` | the install itself is broken (the engine is missing) |
 
 Exit `2` is distinct on purpose: a typo in your CI configuration must not look
 like a schema violation.
@@ -102,8 +121,18 @@ ironclad check --json
 
 ## What it scans
 
-`.sql`, `.php`, `.prisma` — recursively, skipping `node_modules`, `vendor`,
-`dist`, `build`, `.git`, `storage`, and dot-directories.
+Whatever the loaded domains declare they can read — currently `.sql`, `.php`,
+`.prisma`, plus the source extensions the API, security and architecture domains
+need (`.js`, `.ts`, `.tsx`, `.py`, …). Nothing in the core decides this: a domain
+declares its own extensions, so adding one is a new file rather than an edit to
+the engine.
+
+Skipped everywhere: `node_modules`, `vendor`, `dist`, `build`, `.git`, `storage`,
+`coverage`, virtualenvs, and nested dependency trees.
+
+`3` files' worth of schema in a stack the checker cannot parse (Django `models.py`,
+Rails migrations) makes the run exit `2` with a warning rather than `0`. A repo
+that is merely *harder* to check must not look clean.
 
 ## What it does not do
 
@@ -111,10 +140,10 @@ ironclad check --json
   will miss constructs a parser would catch. A human reviewer is still the last
   layer.
 - **No autofix.** Changing a schema is a design decision.
-- **No cross-file analysis.** It does not know that your lookup table lives in a
-  different migration.
-- **No security, performance or API rules** — those are separate domains, see
-  [extending](/extending/).
+- **Limited cross-file analysis.** DB-08 compares how status is stored across the
+  whole project, and ARCH-01 builds an import graph — but neither knows that your
+  lookup table lives in a different migration and is joined elsewhere.
+- **No performance rules**, and no autofix anywhere.
 
 ## Testing the fixtures
 

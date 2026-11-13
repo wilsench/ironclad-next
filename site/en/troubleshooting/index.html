@@ -53,7 +53,7 @@
 <li><a href="/ironclad/en/presets/">Presets — how hard it bites</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Reference</div><ul>
-<li><a href="/ironclad/en/rules/">Rules DB-01…DB-08</a></li>
+<li><a href="/ironclad/en/rules/">Rules</a></li>
 <li><a href="/ironclad/en/checker/">Checker</a></li>
 <li><a href="/ironclad/en/extending/">Extending</a></li>
 <li><a href="/ironclad/en/frameworks/">Laravel, Prisma, and other backends</a></li>
@@ -110,6 +110,14 @@ source ~/.bashrc
 <code>HOME</code> differs between the install shell and the current one.</p>
 <p>Re-run the installer. It rewrites the launcher's <code>IRONCLAD_HOME</code> to the directory
 it just used.</p>
+<h2 id="start-here-ironclad-doctor">Start here: <code>ironclad doctor</code></h2>
+<p>Before reading the rest of this page, run it. It answers the four questions this
+page exists for, in order: is the install complete, which config layers were read,
+what files can be seen, and which rules will actually fire.</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad doctor
+</code></pre></div>
+<p>Exit <code>3</code> means the install itself is broken — re-run the installer. Exit <code>1</code> means
+the install is fine and the repo needs attention. It never writes anything.</p>
 <h2 id="unknown-preset-exit-code-2"><code>unknown preset</code> / exit code 2</h2>
 <p>Exit <code>2</code> is misuse, not a violation. Either the preset name is misspelled, or the
 config file is missing where the checker expected it.</p>
@@ -118,11 +126,16 @@ config file is missing where the checker expected it.</p>
 <p>A copied checker needs its presets beside it. <code>ironclad init</code> handles this by
 writing <code>scripts/presets/</code>. If you copied <code>check_schema.py</code> by hand, copy the
 presets too.</p>
-<h2 id="no-sqlphpprisma-files-found-exit-2"><code>no .sql/.php/.prisma files found</code> (exit 2)</h2>
-<p>The path is wrong, or everything under it was skipped. The checker ignores
-<code>node_modules</code>, <code>vendor</code>, <code>dist</code>, <code>build</code>, <code>.git</code>, <code>storage</code>, and dot-directories.</p>
+<h2 id="no-files-any-rule-can-read-found-exit-2"><code>no files any rule can read found</code> (exit 2)</h2>
+<p>The path is wrong, or everything under it was skipped. The message names the
+extensions the loaded domains were looking for — if that list looks wrong for your
+stack, the install is old.</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad check app/database     # point at the schema, not the repo root
+ironclad doctor                 # shows what was read and what was skipped
 </code></pre></div>
+<p>The message is followed by a second one when the repo has schema this checker
+cannot parse (Django <code>models.py</code>, Rails migrations). Exit <code>2</code> in that case is not
+"clean" — it is "do not treat this as a pass".</p>
 <h2 id="two-machines-different-results">Two machines, different results</h2>
 <p>Look at the last line of the report:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>preset: balanced (.agent/standards.yml)    ← read from the repo
@@ -130,6 +143,24 @@ preset: balanced (preset:balanced)         ← fell back to the skill default
 </code></pre></div>
 <p>If one machine says <code>preset:balanced</code>, <code>.agent/standards.yml</code> is not there — not
 committed, or the command ran from the wrong directory.</p>
+<h2 id="a-rule-fires-on-code-i-know-is-correct">A rule fires on code I know is correct</h2>
+<p>Two possibilities, and they need different answers.</p>
+<p><strong>The rule has a limit you hit.</strong> Read it:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad rules explain ARCH-01
+</code></pre></div>
+<p>The <em>what it will not decide</em> section is there for exactly this. If your case is
+outside what the rule can see, turn it down without turning it off — in
+<code>.agent/standards.yml</code>:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-yaml">rules:
+  ARCH-01: warn        # or: off
+</code></pre></div>
+<p><strong>The rule is wrong.</strong> That is a bug worth reporting, and the useful report
+includes the file, the line, and why the code is correct. Several rules in this
+tool were narrowed or dropped because someone did exactly that.</p>
+<h2 id="a-finding-appeared-that-i-did-not-have-before">A finding appeared that I did not have before</h2>
+<p><code>ironclad presets</code> shows the error/warn count per preset. If the number changed
+between versions, a rule was added — not a rule that started misbehaving. Check
+which one with <code>ironclad rules</code>, and see <em>Score got worse after adding a rule</em>.</p>
 <h2 id="score-got-worse-after-adding-a-rule">Score got worse after adding a rule</h2>
 <p>Expected. A new rule finds things the old set did not look for. Roll it out as
 <code>warn</code> in <code>legacy-friendly</code> first, fix the findings, then promote it to <code>error</code>.</p>
@@ -192,9 +223,12 @@ installer prints the line to add to <code>~/.bashrc</code>.</p>
         <ul><li class="lvl2"><a href="#the-agent-does-not-use-the-skill">The agent does not use the skill</a></li>
 <li class="lvl2"><a href="#ironclad-command-not-found">ironclad: command not found</a></li>
 <li class="lvl2"><a href="#ironclad-skill-not-found-at">ironclad: skill not found at …</a></li>
+<li class="lvl2"><a href="#start-here-ironclad-doctor">Start here: ironclad doctor</a></li>
 <li class="lvl2"><a href="#unknown-preset-exit-code-2">unknown preset / exit code 2</a></li>
-<li class="lvl2"><a href="#no-sqlphpprisma-files-found-exit-2">no .sql/.php/.prisma files found (exit 2)</a></li>
+<li class="lvl2"><a href="#no-files-any-rule-can-read-found-exit-2">no files any rule can read found (exit 2)</a></li>
 <li class="lvl2"><a href="#two-machines-different-results">Two machines, different results</a></li>
+<li class="lvl2"><a href="#a-rule-fires-on-code-i-know-is-correct">A rule fires on code I know is correct</a></li>
+<li class="lvl2"><a href="#a-finding-appeared-that-i-did-not-have-before">A finding appeared that I did not have before</a></li>
 <li class="lvl2"><a href="#score-got-worse-after-adding-a-rule">Score got worse after adding a rule</a></li>
 <li class="lvl2"><a href="#curl-bash-seems-to-ignore-my-input">curl … | bash seems to ignore my input</a></li>
 <li class="lvl2"><a href="#behind-a-proxy-or-the-mirror-is-unreachable">Behind a proxy, or the mirror is unreachable</a></li>

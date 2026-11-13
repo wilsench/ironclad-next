@@ -37,10 +37,10 @@ not "integer everywhere", it is "if no decision exists yet, here is ours".
 
 ```bash
 # neutral — the agent asks when nothing exists yet
-npx github:wilsench/ironclad#v0.10.2
+npx github:wilsench/ironclad#v{{VERSION}}
 
 # office — the agent applies the agreed style immediately
-npx github:wilsench/ironclad#v0.10.2 --mode house
+npx github:wilsench/ironclad#v{{VERSION}} --mode house
 ```
 
 Without the flag you get `ask`. That is deliberate: someone who found this from a
@@ -73,8 +73,8 @@ Three things matter in that wording:
 The mode is stored in a file, not just in your shell environment. So:
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 --mode ask     # back to neutral
-npx github:wilsench/ironclad#v0.10.2 --mode house   # back to opinionated
+npx github:wilsench/ironclad#v{{VERSION}} --mode ask     # back to neutral
+npx github:wilsench/ironclad#v{{VERSION}} --mode house   # back to opinionated
 ```
 
 The installer reads the stored mode first. A `house` machine that gets reinstalled

@@ -53,7 +53,7 @@
 <li><a href="/ironclad/en/presets/">Presets — how hard it bites</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Reference</div><ul>
-<li><a href="/ironclad/en/rules/">Rules DB-01…DB-08</a></li>
+<li><a href="/ironclad/en/rules/">Rules</a></li>
 <li><a href="/ironclad/en/checker/" class="active" aria-current="page">Checker</a></li>
 <li><a href="/ironclad/en/extending/">Extending</a></li>
 <li><a href="/ironclad/en/frameworks/">Laravel, Prisma, and other backends</a></li>
@@ -86,9 +86,12 @@
     <div class="pagegrid">
       <article class="prose">
         <h1 id="checker">Checker</h1>
-<p><code>scripts/check_schema.py</code> is a single-file Python script with no dependencies
-beyond the standard library. It scans <code>.sql</code>, <code>.php</code> (Laravel migrations), and
-<code>.prisma</code> files.</p>
+<p><code>scripts/check_schema.py</code> is the entry point over <code>ironclad_core/</code>, a small
+package with no dependencies beyond the standard library. It reads schema and
+source files across four domains — see <a href="/ironclad/en/en/rules/">Rules</a> for the current list.</p>
+<p>The entry point stayed a single file on purpose: a repo that copied the checker
+in with <code>--with-checker</code> can still run <code>python3 scripts/check_schema.py</code>, and the
+engine travels beside it as <code>scripts/ironclad_core/</code>.</p>
 <h2 id="usage">Usage</h2>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad check                      # current repo, uses .agent/standards.yml
 ironclad check --json               # machine-readable
@@ -133,6 +136,12 @@ python3 scripts/check_schema.py . --preset balanced
 </tr>
 </tbody>
 </table></div>
+<p>Three more commands read the same config layering as <code>check</code>, so what they show is
+what a run will do:</p>
+<div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code class="language-bash">ironclad doctor                 # why is this not doing what I expected?
+ironclad rules                  # every rule and its effective severity
+ironclad rules explain SEC-01   # what it looks for, and what it refuses to decide
+</code></pre></div>
 <p>Precedence, weakest to strongest:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>builtin:balanced  &lt;  .agent/standards.yml  &lt;  --preset  &lt;  --config
 </code></pre></div>
@@ -141,8 +150,12 @@ python3 scripts/check_schema.py . --preset balanced
 overrides per-rule severity. A file that contains nothing but <code>name: coherence</code>
 (exactly what <code>ironclad preset</code> writes) is read as that preset, so both forms
 are valid: a name alone, or explicit rules.</p>
-<p>Without <code>--preset</code>, the checker looks for <code>.agent/standards.yml</code> and walks up
-from the target directory. The report's last line tells you which one it used —
+<p>Without <code>--preset</code>, the checker looks for <code>.agent/standards.yml</code> <strong>inside the
+target</strong>. It used to walk up parent directories, which meant checking
+<code>~/projects/app</code> silently picked up <code>~/.agent/standards.yml</code> — a policy for a
+different project, or for the machine. A parent policy is now an explicit act:
+<code>--config ../.agent/standards.yml</code>.</p>
+<p>The report's last line tells you which one it used —
 <code>preset: balanced (.agent/standards.yml)</code> or <code>preset: strict (preset:strict)</code>.</p>
 <h2 id="exit-codes">Exit codes</h2>
 <div class="tablewrap"><table>
@@ -163,7 +176,11 @@ from the target directory. The report's last line tells you which one it used �
 </tr>
 <tr>
 <td><code>2</code></td>
-<td>misuse — unknown preset, config not found, no files</td>
+<td>misuse — unknown preset, config not found, no files to check</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>the install itself is broken (the engine is missing)</td>
 </tr>
 </tbody>
 </table></div>
@@ -199,18 +216,26 @@ two machines disagree and the cause is a config file that was never committed.</
 }
 </code></pre></div>
 <h2 id="what-it-scans">What it scans</h2>
-<p><code>.sql</code>, <code>.php</code>, <code>.prisma</code> — recursively, skipping <code>node_modules</code>, <code>vendor</code>,
-<code>dist</code>, <code>build</code>, <code>.git</code>, <code>storage</code>, and dot-directories.</p>
+<p>Whatever the loaded domains declare they can read — currently <code>.sql</code>, <code>.php</code>,
+<code>.prisma</code>, plus the source extensions the API, security and architecture domains
+need (<code>.js</code>, <code>.ts</code>, <code>.tsx</code>, <code>.py</code>, …). Nothing in the core decides this: a domain
+declares its own extensions, so adding one is a new file rather than an edit to
+the engine.</p>
+<p>Skipped everywhere: <code>node_modules</code>, <code>vendor</code>, <code>dist</code>, <code>build</code>, <code>.git</code>, <code>storage</code>,
+<code>coverage</code>, virtualenvs, and nested dependency trees.</p>
+<p><code>3</code> files' worth of schema in a stack the checker cannot parse (Django <code>models.py</code>,
+Rails migrations) makes the run exit <code>2</code> with a warning rather than <code>0</code>. A repo
+that is merely <em>harder</em> to check must not look clean.</p>
 <h2 id="what-it-does-not-do">What it does not do</h2>
 <ul>
 <li><strong>Not a SQL parser.</strong> It is regex-based. It can produce false positives and it
   will miss constructs a parser would catch. A human reviewer is still the last
   layer.</li>
 <li><strong>No autofix.</strong> Changing a schema is a design decision.</li>
-<li><strong>No cross-file analysis.</strong> It does not know that your lookup table lives in a
-  different migration.</li>
-<li><strong>No security, performance or API rules</strong> — those are separate domains, see
-  <a href="/ironclad/en/extending/">extending</a>.</li>
+<li><strong>Limited cross-file analysis.</strong> DB-08 compares how status is stored across the
+  whole project, and ARCH-01 builds an import graph — but neither knows that your
+  lookup table lives in a different migration and is joined elsewhere.</li>
+<li><strong>No performance rules</strong>, and no autofix anywhere.</li>
 </ul>
 <h2 id="testing-the-fixtures">Testing the fixtures</h2>
 <div class="codewrap"><button class="copy" type="button" aria-label="Copy command">COPY</button><pre><code>examples/good.sql            balanced 0 error 0 warn   exit 0
@@ -224,7 +249,7 @@ examples/bad.prisma          1 finding
 (<code>.github/workflows/engineering-standards.yml</code>), so a broken checker is caught
 here before it reaches a user.</p>
         <nav class="pager" aria-label="Next page">
-          <a class="prev" href="/ironclad/en/rules/"><span>Previous</span><b>Rules DB-01…DB-08</b></a>
+          <a class="prev" href="/ironclad/en/rules/"><span>Previous</span><b>Rules</b></a>
 <a class="next" href="/ironclad/en/extending/"><span>Next</span><b>Extending</b></a>
         </nav>
         <footer class="docfoot">

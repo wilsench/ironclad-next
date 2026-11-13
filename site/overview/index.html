@@ -53,7 +53,7 @@
 <li><a href="/ironclad/presets/">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/">Aturan DB-01…DB-08</a></li>
+<li><a href="/ironclad/rules/">Aturan</a></li>
 <li><a href="/ironclad/checker/">Checker</a></li>
 <li><a href="/ironclad/extending/">Memperluas</a></li>
 <li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
@@ -205,7 +205,11 @@ atau isi berkas YAML-nya.</p>
 <li><strong>Bukan pengganti programmer.</strong> Tidak menulis fitur, tidak memperbaiki bug.</li>
 <li><strong>Bukan pengganti review.</strong> Ia menangkap pola; ia tidak tahu apakah logika
   bisnismu benar.</li>
-<li><strong>Bukan alat keamanan.</strong> Tidak memeriksa kebocoran data atau celah akses.</li>
+<li><strong>Bukan audit keamanan.</strong> Ia memeriksa tiga hal yang bisa dibuktikan dari
+  berkas — kredensial di berkas yang bisa ikut terkirim git, kredensial yang
+  ditulis langsung di kode, dan <code>.env.example</code> yang sudah melenceng dari <code>.env</code>.
+  Ia tidak menemukan celah kontrol akses, injeksi, atau apa pun yang butuh
+  aplikasi berjalan.</li>
 <li><strong>Tidak mengubah tampilan aplikasi.</strong> Tidak ada hubungannya dengan desain.</li>
 <li><strong>Tidak mengirim data ke mana pun.</strong> Semuanya berjalan di komputermu sendiri.</li>
 </ul>
@@ -213,10 +217,14 @@ atau isi berkas YAML-nya.</p>
 <ul>
 <li><strong>Pemeriksanya mencocokkan pola, bukan memahami kode.</strong> Ia bisa salah menandai
   yang benar dan melewatkan yang salah. Manusia tetap lapis terakhir.</li>
-<li><strong>Cakupannya sempit dengan sengaja.</strong> Delapan pola tentang cara menyimpan
-  status, uang, dan waktu. Bukan dua ratus aturan database. Alat yang mencoba
-  menangkap segalanya kalah dari linter khusus, dan tidak ada yang memasangnya
-  dua kali.</li>
+<li><strong>Cakupannya sempit dengan sengaja.</strong> Enam belas aturan di empat domain — cara
+  menyimpan status, uang, dan waktu; cara endpoint menjawab; apa yang bocor; dan
+  bagaimana modul saling bergantung. Bukan dua ratus aturan. Alat yang mencoba
+  menangkap segalanya kalah dari linter khusus, dan tak ada yang memasangnya dua
+  kali.</li>
+<li><strong>Beberapa aturan gugur setelah diukur.</strong> "Controller tidak boleh menyentuh
+  model" menyala di 6 dari 7 controller Laravel sungguhan. Aturan itu tidak ada
+  di alat ini.</li>
 <li><strong>Framework yang belum didukung akan berhenti dengan jujur</strong> (<code>exit 2</code>), bukan
   berpura-pura hijau.</li>
 <li><strong>Ia tidak bisa memaksa orang membaca.</strong> Kalau CI tidak dipasang dan

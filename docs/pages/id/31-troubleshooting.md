@@ -35,6 +35,21 @@ description: Use when several developers share one database — make sure everyo
 | Dipasang di folder yang tidak dibaca agent itu | pakai `--target` yang benar |
 | Dua skill bernama sama | hapus duplikatnya |
 
+## Mulai dari sini: `ironclad doctor`
+
+Sebelum membaca halaman ini sampai habis, jalankan itu. Ia menjawab empat
+pertanyaan yang membuat halaman ini ada: apakah instalasinya lengkap, lapisan
+config mana yang dibaca, berkas apa yang terlihat, dan aturan mana yang benar-benar
+akan menyala.
+
+```bash
+ironclad doctor
+```
+
+Exit `3` berarti instalasinya sendiri rusak — jalankan ulang installer. Exit `1`
+berarti instalasinya baik dan reponya yang butuh perhatian. Ia tidak pernah menulis
+apa pun.
+
 ## `unknown preset strict`
 
 **Gejala:** checker jalan, tapi `--preset` apa pun ditolak.
@@ -48,10 +63,10 @@ python3 scripts/check_schema.py --list-presets   # kalau kosong, ini penyebabnya
 **Perbaikan:**
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2 --project . --preset balanced
+npx github:wilsench/ironclad#v{{VERSION}} --project . --preset balanced
 ```
 
-## `no .sql/.php/.prisma files found`
+## `no files any rule can read found`
 
 **Gejala:** checker bilang tidak ada berkas, padahal repo penuh migration.
 
@@ -76,6 +91,28 @@ CHANGED=$(git diff --name-only --diff-filter=d origin/${{ github.base_ref }}...H
 [ -z "$CHANGED" ] && exit 0
 python scripts/check_schema.py $CHANGED
 ```
+
+## Aturan menyala pada kode yang saya tahu benar
+
+Dua kemungkinan, dan jawabannya berbeda.
+
+**Kena batas aturannya.** Baca dulu:
+
+```bash
+ironclad rules explain ARCH-01
+```
+
+Bagian *apa yang menolak ia putuskan* ada persis untuk kasus ini. Kalau kodemu di
+luar yang bisa ia lihat, turunkan tanpa mematikannya — di `.agent/standards.yml`:
+
+```yaml
+rules:
+  ARCH-01: warn        # atau: off
+```
+
+**Aturannya yang salah.** Itu bug yang layak dilaporkan, dan laporan yang berguna
+memuat berkas, baris, dan kenapa kodenya benar. Beberapa aturan di alat ini
+dipersempit atau dibuang justru karena ada yang melaporkan seperti itu.
 
 ## False positive pada kolom yang bukan status
 
@@ -163,7 +200,7 @@ ironclad version
 Kalau angkanya bukan versi yang kamu tuju:
 
 ```bash
-npx --yes github:wilsench/ironclad#v0.10.2 --force
+npx --yes github:wilsench/ironclad#v{{VERSION}} --force
 ```
 
 `--force` membuat installer menimpa payload yang ada. Kalau masih lama, bersihkan

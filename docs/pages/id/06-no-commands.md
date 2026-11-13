@@ -14,7 +14,7 @@ lalu selesai.
 ## 1. Pasang
 
 ```bash
-npx github:wilsench/ironclad#v0.10.2
+npx github:wilsench/ironclad#v{{VERSION}}
 ```
 
 ## 2. Selesai — benar-benar selesai
@@ -132,7 +132,7 @@ belum ada — bukan memilih diam-diam.
 ironclad init --no-agent-files
 ```
 
-Atau saat install: `npx github:wilsench/ironclad#v0.10.2 --no-agent-files`.
+Atau saat install: `npx github:wilsench/ironclad#v{{VERSION}} --no-agent-files`.
 
 Tanpa blok itu, agent hanya tahu aturannya kalau ia memuat skill — jadi kamu
 kembali ke dunia yang butuh command. Pilihan ini ada untuk repo yang sudah punya
