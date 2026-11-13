@@ -46,7 +46,10 @@ else
   # the working tree), tag reachable. Anyone installing #v0.11.0 got the old
   # engine while the docs promised the new one. Compare the trees, not the label.
   if git rev-parse -q --verify "$WANT^{commit}" >/dev/null; then
-    AHEAD="$(git rev-list --count "$WANT..HEAD" -- skills/ docs/ bin/ install.sh scripts/ 2>/dev/null)"
+    # package.json and install.sh travel inside the npm package, so a change to
+    # either is a payload change even though it is not under skills/.
+    AHEAD="$(git rev-list --count "$WANT..HEAD" -- skills/ docs/ bin/ cli/ \
+        install.sh scripts/ package.json 2>/dev/null)"
     if [ "${AHEAD:-0}" = "0" ]; then
       say "payload changes after tag" "none"
     else
