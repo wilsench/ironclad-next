@@ -263,7 +263,12 @@ _manifest() {
     assets/presets/balanced.yml assets/presets/strict.yml \
     assets/presets/legacy-friendly.yml assets/presets/coherence.yml \
     scripts/check_schema.py scripts/init_standards.py scripts/drill.py \
-    scripts/agent_files.py scripts/update_check.py bin/ironclad
+    scripts/agent_files.py scripts/update_check.py bin/ironclad \
+    ironclad_core/__init__.py ironclad_core/engine.py ironclad_core/discovery.py \
+    ironclad_core/config.py ironclad_core/report.py ironclad_core/rules.py \
+    ironclad_core/doctor.py ironclad_core/cli.py ironclad_core/domains/__init__.py \
+    ironclad_core/domains/database.py ironclad_core/domains/api.py \
+    ironclad_core/domains/security.py ironclad_core/domains/architecture.py
 }
 
 FILES="$(_manifest)"

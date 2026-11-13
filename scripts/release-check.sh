@@ -10,6 +10,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
+PAYLOAD="skills/ironclad"
 SKILL_VER="$(sed -n 's/^version: *//p' skills/ironclad/SKILL.md | head -1)"
 PKG_VER="$(python3 -c 'import json;print(json.load(open("package.json"))["version"])')"
 WANT="${1:-v$SKILL_VER}"
@@ -41,9 +42,37 @@ else
 fi
 
 # The live mirror is what curl and the docs actually serve.
+#
+# Comparing version numbers here is not enough, and this guard proved it: the
+# mirror served a 0.10.2 SKILL.md promising four domains while pkg/ contained
+# no ironclad_core at all. Every string agreed; the payload was a shell. So the
+# mirror is checked three ways: the version, the engine's presence, and a digest
+# of the served files against a digest computed from the checkout.
 LIVE="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad/pkg/SKILL.md 2>/dev/null | sed -n 's/^version: *//p' | head -1)"
 say "live mirror" "${LIVE:-unreachable}"
 [ "$LIVE" = "$SKILL_VER" ] || { say "MISMATCH" "mirror != SKILL.md"; fail=1; }
+
+# The engine must be on the mirror, not only in the repo.
+if curl -fsS --max-time 15 https://wilsench.my.id/ironclad/pkg/ironclad_core/engine.py >/dev/null 2>&1; then
+  say "engine on mirror" "yes"
+else
+  say "engine on mirror" "MISSING — mirror has no ironclad_core/"; fail=1
+fi
+
+# Content, not version strings: recompute the digest the mirror publishes.
+if command -v sha256sum >/dev/null; then
+  MIRROR_DIGEST="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad/pkg/DIGEST 2>/dev/null | tr -d '\n')"
+  LOCAL_DIGEST="$( cd "$PAYLOAD" && find . -type f \
+      ! -path './.git/*' ! -path '*/__pycache__/*' ! -name '*.pyc' \
+      | sed 's|^\./||' | LC_ALL=C sort \
+      | while IFS= read -r f; do sha256sum "$f"; done | sha256sum | cut -d' ' -f1 )"
+  say "mirror digest" "${MIRROR_DIGEST:-none}"
+  if [ -z "$MIRROR_DIGEST" ]; then
+    say "MISMATCH" "mirror publishes no DIGEST — cannot verify content"; fail=1
+  elif [ "$MIRROR_DIGEST" != "$LOCAL_DIGEST" ]; then
+    say "MISMATCH" "mirror payload differs from checkout"; fail=1
+  fi
+fi
 
 # Every install command in the docs must pin the tag that exists.
 DOC_TAGS="$(grep -rhoE 'v[0-9]+\.[0-9]+\.[0-9]+' docs/pages README.md 2>/dev/null | sort -u | tr '\n' ' ')"
@@ -51,6 +80,14 @@ say "tags used in docs" "${DOC_TAGS:-none}"
 for t in $DOC_TAGS; do
   [ "$t" = "$WANT" ] || { say "MISMATCH" "docs pin $t, want $WANT"; fail=1; }
 done
+
+# What the docs promise must exist in the engine. "Five domains" shipped in
+# ROADMAP while four were registered; this counts what is actually there.
+REGISTERED="$(cd "$PAYLOAD" && python3 -c '
+from ironclad_core.domains import load_all
+print(len(load_all().rule_ids()))
+' 2>/dev/null)"
+say "rules registered" "${REGISTERED:-?}"
 
 # The site header number.
 SITE="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad/ 2>/dev/null | grep -oE 'v0\.[0-9]+\.[0-9]+' | sort -u | tr -d 'v' | tr '\n' ' ')"

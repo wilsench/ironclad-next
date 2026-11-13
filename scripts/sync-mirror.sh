@@ -21,7 +21,7 @@ manifest() {
       | sed 's|^\./||' | sort )
 }
 
-mkdir -p "$DEST"/{assets/presets,bin,references,scripts,templates}
+mkdir -p "$DEST"/{assets/presets,bin,references,scripts,templates,ironclad_core/domains}
 cp "$SKILL/SKILL.md"                 "$DEST/"
 cp "$SKILL"/references/*.md          "$DEST/references/"
 cp "$SKILL"/scripts/*.py             "$DEST/scripts/"
@@ -29,6 +29,21 @@ cp "$SKILL"/templates/*.md           "$DEST/templates/"
 cp "$SKILL"/assets/presets/*.yml     "$DEST/assets/presets/"
 cp "$SKILL"/bin/ironclad             "$DEST/bin/ironclad"
 chmod +x "$DEST/bin/ironclad"
+
+# The engine. Missing this whole directory once shipped a mirror whose SKILL.md
+# promised four domains and whose payload contained none of them: the installer
+# fetched a compatible-looking tree, `ironclad check` failed on import, and
+# nothing in the release guard noticed because every version string agreed.
+if [ -d "$SKILL/ironclad_core" ]; then
+  ( cd "$SKILL/ironclad_core" && find . -type f -name '*.py' ! -path '*/__pycache__/*' ) \
+    | while IFS= read -r rel; do
+        mkdir -p "$DEST/ironclad_core/$(dirname "${rel#./}")"
+        cp "$SKILL/ironclad_core/${rel#./}" "$DEST/ironclad_core/${rel#./}"
+      done
+else
+  echo "no engine at $SKILL/ironclad_core — refusing to publish an empty shell" >&2
+  exit 1
+fi
 
 # A stale file left on the mirror is worse than a missing one: the installer
 # would happily fetch a preset or script that no longer exists in the repo.
@@ -44,6 +59,16 @@ while IFS= read -r old; do
 done < <(find "$DEST" -type f)
 
 manifest > "$DEST/MANIFEST"
+
+# A digest of the payload itself, so a release guard can compare content
+# instead of comparing version strings and calling that agreement.
+digest() {
+  ( cd "$DEST" && find . -type f ! -name MANIFEST ! -name DIGEST \
+      ! -path '*/__pycache__/*' ! -name '*.pyc' \
+      | sed 's|^\./||' | LC_ALL=C sort \
+      | while IFS= read -r f; do sha256sum "$f"; done ) | sha256sum | cut -d' ' -f1
+}
+digest > "$DEST/DIGEST"
 chown -R "$OWNER" "$DEST"
 
 # the installer itself lives beside the docs, not inside pkg/

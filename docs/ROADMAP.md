@@ -184,7 +184,7 @@ help yang terpotong.
 
 ---
 
-## Fase 6 — Distribusi & publikasi (butuh persetujuan)
+## Fase 6 — Distribusi & publikasi (KODE SELESAI, penerbitan menunggu)
 
 - Repo `wilsench/ironclad-next`, migrasi riwayat.
 - Rilis ditandai, `release-check.sh` hijau.
@@ -192,6 +192,22 @@ help yang terpotong.
   satu, dan bukan lima. Domain testing tidak dikirim karena ketiga aturannya
   gugur saat diukur (lihat tabel di Fase 4).
 - **Tidak ada push/publish tanpa persetujuan eksplisit.**
+
+**Dua bug distribusi ditemukan saat mengerjakan fase ini** — keduanya lolos dari
+penjaga rilis yang lama:
+
+| # | Bug | Akibat |
+|---|---|---|
+| D-1 | `sync-mirror.sh` tidak pernah menyalin `ironclad_core/` | jalur `curl\|bash` memasang cangkang tanpa mesin; `npx` selamat karena menyalin seluruh repo |
+| D-2 | `release-check.sh` membandingkan string versi | mirror `0.10.2` + repo `0.10.2` = "agrees everywhere" walau payload tidak bisa jalan |
+
+Bug ketiga ditemukan oleh tes yang baru: `DIGEST` bergantung pada locale, jadi
+cocok di mesin ini dan berbeda di mesin lain. Diperbaiki dengan `LC_ALL=C`.
+
+**Gerbang:** `test_distribution.py` 45/45 (baru), gerbang lain 22/31/29/23/43,
+108 kasus perilaku 0 berubah, `curl|bash` dan `npx` diuji di HOME sandbox.
+`release-check.sh` kini **menolak** (exit 1) mirror live yang belum disinkronkan
+— itu perilaku yang benar. Lihat `docs/PHASE6_DISTRIBUTION.md`.
 
 ---
 
