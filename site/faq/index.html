@@ -9,7 +9,7 @@
 <link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad/faq/">
 <link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad/en/faq/">
 <meta name="color-scheme" content="light">
-<link rel="stylesheet" href="/ironclad/assets/docs.css?v=0.10.2-0cff1a72">
+<link rel="stylesheet" href="/ironclad/assets/docs.css?v=0.11.0-0cff1a72">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -23,7 +23,7 @@
       <span class="mark" aria-hidden="true">IC</span>
       <span>
         <b>Ironclad</b>
-        <i>v0.10.2-0cff1a72 · MIT</i>
+        <i>v0.11.0-0cff1a72 · MIT</i>
       </span>
     </a>
 
@@ -96,7 +96,7 @@
 <p>Kalau kamu ingin memastikan, sebut namanya: <code>pakai skill ironclad</code>.</p>
 <h2 id="kalau-tidak-mau-sepanjang-ini-cukup-satu-perintah">Kalau tidak mau sepanjang ini, cukup satu perintah?</h2>
 <p>Ya:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.10.2
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0
 </code></pre></div>
 <p>Itu saja. Tidak ada langkah kedua — agent sudah bertanya sendiri di repo mana pun.</p>
 <p>Kalau kamu ingin aturannya ikut git supaya seluruh tim dan CI memakai jawaban yang sama:</p>
@@ -105,16 +105,16 @@
 <p>Satu perintah, tanpa clone, tanpa baca dokumen — dan tanpa <code>ironclad init</code> kecuali kamu ingin aturannya ikut git.</p>
 <h2 id="installer-ini-bisa-untuk-selain-hermes">Installer ini bisa untuk selain Hermes?</h2>
 <p>Ya, dan itu target utamanya. Enam target: Hermes, Claude Code, Codex, Cursor, opencode, Antigravity. Formatnya standar Agent Skills (<code>SKILL.md</code>), bukan format khusus Hermes.</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.10.2  --all              # semua agent yang terdeteksi
-npx github:wilsench/ironclad#v0.10.2  --target claude
-npx github:wilsench/ironclad#v0.10.2  --target gemini    # Antigravity global
-npx github:wilsench/ironclad#v0.10.2  --target opencode
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0  --all              # semua agent yang terdeteksi
+npx github:wilsench/ironclad#v0.11.0  --target claude
+npx github:wilsench/ironclad#v0.11.0  --target gemini    # Antigravity global
+npx github:wilsench/ironclad#v0.11.0  --target opencode
 </code></pre></div>
 <h2 id="bisa-langsung-pakai-wilsenchironclad">Bisa langsung pakai <code>wilsench/ironclad</code>?</h2>
 <p>Untuk Hermes, ya — begitu repo GitHub-nya terbit:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">hermes skills install wilsench/ironclad/skills/ironclad
 </code></pre></div>
-<p>Untuk agent lain, pakai <code>npx github:wilsench/ironclad#v0.10.2</code> — itu menarik paket langsung dari repo GitHub tanpa publish ke npm. Kalau tidak ada Node, mirror <code>install.sh</code> di <code>wilsench.my.id</code> menjalankan kode yang sama persis.</p>
+<p>Untuk agent lain, pakai <code>npx github:wilsench/ironclad#v0.11.0</code> — itu menarik paket langsung dari repo GitHub tanpa publish ke npm. Kalau tidak ada Node, mirror <code>install.sh</code> di <code>wilsench.my.id</code> menjalankan kode yang sama persis.</p>
 <h2 id="apakah-curl-bash-aman">Apakah <code>curl | bash</code> aman?</h2>
 <p>Installer-nya 180 baris bash dan bisa kamu baca dulu:</p>
 <div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">curl -fsSL https://wilsench.my.id/ironclad/install.sh | less
@@ -158,14 +158,14 @@ mengganggu, lepas dengan <code>--uninstall</code>; skill dan alat lainnya tetap 
 manual.</p>
 <h2 id="saya-tidak-setuju-enum-dianggap-salah-masih-bisa-pakai">Saya tidak setuju enum dianggap salah. Masih bisa pakai?</h2>
 <p>Bisa. Pakai preset <code>coherence</code>:</p>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.10.2 check . --preset coherence
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 check . --preset coherence
 </code></pre></div>
 <p>Di preset itu tidak ada gaya yang dihukum: <code>enum</code>, teks berkode, dan integer + lookup
 semuanya diterima. Yang <strong>gagal</strong> hanya satu hal — konsep yang sama disimpan dua cara
 berbeda dalam satu proyek. Itu satu-satunya tesis Ironclad; sisanya selera, dan selera
 kamu tidak perlu sama dengan siapa pun.</p>
 <h2 id="bisa-coba-tanpa-install">Bisa coba tanpa install?</h2>
-<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.10.2 check .
+<div class="codewrap"><button class="copy" type="button" aria-label="Salin perintah">SALIN</button><pre><code class="language-bash">npx github:wilsench/ironclad#v0.11.0 check .
 </code></pre></div>
 <p>Itu menjalankan pemeriksa dan berhenti. Tidak ada file yang ditulis, tidak ada
 konfigurasi agent yang disentuh. Kalau hasilnya bersih, berarti repo-mu memang konsisten
@@ -174,7 +174,7 @@ konfigurasi agent yang disentuh. Kalau hasilnya bersih, berarti repo-mu memang k
           <a class="prev" href="/ironclad/troubleshooting/"><span>Sebelumnya</span><b>Troubleshooting</b></a>
         </nav>
         <footer class="docfoot">
-          <span>Ironclad v0.10.2-0cff1a72</span>
+          <span>Ironclad v0.11.0-0cff1a72</span>
           <span>MIT</span>
           <span>Chia Wilsen</span>
         </footer>
@@ -212,7 +212,7 @@ konfigurasi agent yang disentuh. Kalau hasilnya bersih, berarti repo-mu memang k
   <p class="hint">↑ ↓ pilih · ↵ buka · ESC tutup</p>
 </div>
 
-<script src="/ironclad/assets/docs.js?v=0.10.2-0cff1a72" defer></script>
-<script src="/ironclad/assets/search-index.js?v=0.10.2-0cff1a72" defer></script>
+<script src="/ironclad/assets/docs.js?v=0.11.0-0cff1a72" defer></script>
+<script src="/ironclad/assets/search-index.js?v=0.11.0-0cff1a72" defer></script>
 </body>
 </html>
