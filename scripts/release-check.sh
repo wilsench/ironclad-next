@@ -48,12 +48,12 @@ fi
 # no ironclad_core at all. Every string agreed; the payload was a shell. So the
 # mirror is checked three ways: the version, the engine's presence, and a digest
 # of the served files against a digest computed from the checkout.
-LIVE="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad/pkg/SKILL.md 2>/dev/null | sed -n 's/^version: *//p' | head -1)"
+LIVE="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad-next/pkg/SKILL.md 2>/dev/null | sed -n 's/^version: *//p' | head -1)"
 say "live mirror" "${LIVE:-unreachable}"
 [ "$LIVE" = "$SKILL_VER" ] || { say "MISMATCH" "mirror != SKILL.md"; fail=1; }
 
 # The engine must be on the mirror, not only in the repo.
-if curl -fsS --max-time 15 https://wilsench.my.id/ironclad/pkg/ironclad_core/engine.py >/dev/null 2>&1; then
+if curl -fsS --max-time 15 https://wilsench.my.id/ironclad-next/pkg/ironclad_core/engine.py >/dev/null 2>&1; then
   say "engine on mirror" "yes"
 else
   say "engine on mirror" "MISSING — mirror has no ironclad_core/"; fail=1
@@ -61,7 +61,7 @@ fi
 
 # Content, not version strings: recompute the digest the mirror publishes.
 if command -v sha256sum >/dev/null; then
-  MIRROR_DIGEST="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad/pkg/DIGEST 2>/dev/null | tr -d '\n')"
+  MIRROR_DIGEST="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad-next/pkg/DIGEST 2>/dev/null | tr -d '\n')"
   LOCAL_DIGEST="$( cd "$PAYLOAD" && find . -type f \
       ! -path './.git/*' ! -path '*/__pycache__/*' ! -name '*.pyc' \
       | sed 's|^\./||' | LC_ALL=C sort \
@@ -90,7 +90,7 @@ print(len(load_all().rule_ids()))
 say "rules registered" "${REGISTERED:-?}"
 
 # The site header number.
-SITE="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad/ 2>/dev/null | grep -oE 'v0\.[0-9]+\.[0-9]+' | sort -u | tr -d 'v' | tr '\n' ' ')"
+SITE="$(curl -fsS --max-time 15 https://wilsench.my.id/ironclad-next/ 2>/dev/null | grep -oE 'v0\.[0-9]+\.[0-9]+' | sort -u | tr -d 'v' | tr '\n' ' ')"
 say "version on site" "${SITE:-unreachable}"
 case " $SITE " in *" $SKILL_VER "*) ;; *) say "MISMATCH" "site != SKILL.md"; fail=1 ;; esac
 

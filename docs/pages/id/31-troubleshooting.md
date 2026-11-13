@@ -166,15 +166,15 @@ cat ~/.ssh/id_ed25519.pub     # tempel di GitHub → Settings → SSH keys
 Installer mencoba GitHub lebih dulu, lalu mirror. Kalau keduanya gagal, biasanya jaringan:
 
 ```bash
-curl -sI https://wilsench.my.id/ironclad/pkg/SKILL.md | head -1
+curl -sI https://wilsench.my.id/ironclad-next/pkg/SKILL.md | head -1
 curl -sI https://raw.githubusercontent.com/wilsench/ironclad-next/main/skills/ironclad/SKILL.md | head -1
 ```
 
 Salah satu harus `200`. Kalau mirror 200 tapi installer tetap gagal, paksa lewat mirror:
 
 ```bash
-IRONCLAD_BASE=https://wilsench.my.id/ironclad/pkg \
-  bash -c "$(curl -fsSL https://wilsench.my.id/ironclad/install.sh)"
+IRONCLAD_BASE=https://wilsench.my.id/ironclad-next/pkg \
+  bash -c "$(curl -fsSL https://wilsench.my.id/ironclad-next/install.sh)"
 ```
 
 ## Agent memuat skill tapi tidak mengikutinya

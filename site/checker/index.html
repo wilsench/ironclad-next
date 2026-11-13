@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Checker — Ironclad</title>
 <meta name="description" content="Referensi lengkap check_schema.py — argumen, exit code, format JSON, apa yang dipindai dan apa yang tidak.">
-<link rel="canonical" href="https://wilsench.my.id/ironclad/checker/">
-<link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad/checker/">
-<link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad/en/checker/">
+<link rel="canonical" href="https://wilsench.my.id/ironclad-next/checker/">
+<link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad-next/checker/">
+<link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad-next/en/checker/">
 <meta name="color-scheme" content="light">
-<link rel="stylesheet" href="/ironclad/assets/docs.css?v=0.11.0-0cff1a72">
+<link rel="stylesheet" href="/ironclad-next/assets/docs.css?v=0.11.0-0cff1a72">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -19,7 +19,7 @@
 <div class="shell">
 
   <aside class="side" id="side">
-    <a class="brand" href="/ironclad/">
+    <a class="brand" href="/ironclad-next/">
       <span class="mark" aria-hidden="true">IC</span>
       <span>
         <b>Ironclad</b>
@@ -28,8 +28,8 @@
     </a>
 
     <div class="langsw" role="group" aria-label="Bahasa">
-      <a href="/ironclad/checker/" class="on" aria-current="true">ID</a>
-      <a href="/ironclad/en/checker/">EN</a>
+      <a href="/ironclad-next/checker/" class="on" aria-current="true">ID</a>
+      <a href="/ironclad-next/en/checker/">EN</a>
     </div>
 
     <button class="searchbtn" type="button" id="searchbtn">
@@ -38,30 +38,30 @@
 
     <nav class="nav" aria-label="Dokumentasi">
       <div class="navgroup"><div class="navlabel"><span>01</span>Mulai</div><ul>
-<li><a href="/ironclad/overview/">Apa ini, untuk siapa</a></li>
-<li><a href="/ironclad/kamus/">Kamus</a></li>
-<li><a href="/ironclad/install/">Pasang di agent</a></li>
-<li><a href="/ironclad/how-agents-use-it/">Cara agent memakainya</a></li>
-<li><a href="/ironclad/quickstart/">Quickstart</a></li>
-<li><a href="/ironclad/no-commands/">Cara pakai tanpa command</a></li>
-<li><a href="/ironclad/team/">Untuk tim</a></li>
-<li><a href="/ironclad/update/">Memperbarui</a></li>
+<li><a href="/ironclad-next/overview/">Apa ini, untuk siapa</a></li>
+<li><a href="/ironclad-next/kamus/">Kamus</a></li>
+<li><a href="/ironclad-next/install/">Pasang di agent</a></li>
+<li><a href="/ironclad-next/how-agents-use-it/">Cara agent memakainya</a></li>
+<li><a href="/ironclad-next/quickstart/">Quickstart</a></li>
+<li><a href="/ironclad-next/no-commands/">Cara pakai tanpa command</a></li>
+<li><a href="/ironclad-next/team/">Untuk tim</a></li>
+<li><a href="/ironclad-next/update/">Memperbarui</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>02</span>Konsep</div><ul>
-<li><a href="/ironclad/modes/">Mode — ask atau house</a></li>
-<li><a href="/ironclad/three-layers/">Tiga lapis</a></li>
-<li><a href="/ironclad/presets/">Preset — seberapa keras</a></li>
+<li><a href="/ironclad-next/modes/">Mode — ask atau house</a></li>
+<li><a href="/ironclad-next/three-layers/">Tiga lapis</a></li>
+<li><a href="/ironclad-next/presets/">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/">Aturan</a></li>
-<li><a href="/ironclad/checker/" class="active" aria-current="page">Checker</a></li>
-<li><a href="/ironclad/extending/">Memperluas</a></li>
-<li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
+<li><a href="/ironclad-next/rules/">Aturan</a></li>
+<li><a href="/ironclad-next/checker/" class="active" aria-current="page">Checker</a></li>
+<li><a href="/ironclad-next/extending/">Memperluas</a></li>
+<li><a href="/ironclad-next/frameworks/">Laravel, Prisma, dan backend lain</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>04</span>Operasional</div><ul>
-<li><a href="/ironclad/ci/">CI & pre-commit</a></li>
-<li><a href="/ironclad/troubleshooting/">Troubleshooting</a></li>
-<li><a href="/ironclad/faq/">FAQ</a></li>
+<li><a href="/ironclad-next/ci/">CI & pre-commit</a></li>
+<li><a href="/ironclad-next/troubleshooting/">Troubleshooting</a></li>
+<li><a href="/ironclad-next/faq/">FAQ</a></li>
 </ul></div>
     </nav>
 
@@ -79,7 +79,7 @@
         <span></span><span></span>
       </button>
       <span class="crumb">Referensi / <b>Checker</b></span>
-      <a class="langsw-mini" href="/ironclad/en/checker/" aria-label="Bahasa">EN</a>
+      <a class="langsw-mini" href="/ironclad-next/en/checker/" aria-label="Bahasa">EN</a>
       <button class="searchmini" type="button" id="searchmini" aria-label="Cari">/<span>Cari</span></button>
     </header>
 
@@ -88,7 +88,7 @@
         <h1 id="checker">Checker</h1>
 <p><code>scripts/check_schema.py</code> adalah pintu masuk ke <code>ironclad_core/</code>, paket kecil tanpa
 dependensi (stdlib Python saja, tidak butuh PyYAML). Ia membaca berkas skema dan
-kode sumber di empat domain — lihat <a href="/ironclad/rules/">Aturan</a> untuk daftar terkini.</p>
+kode sumber di empat domain — lihat <a href="/ironclad-next/rules/">Aturan</a> untuk daftar terkini.</p>
 <p>Pintu masuknya sengaja tetap satu berkas: repo yang menyalin checker lewat
 <code>--with-checker</code> masih bisa menjalankan <code>python3 scripts/check_schema.py</code>, dan
 mesinnya ikut sebagai <code>scripts/ironclad_core/</code>.</p>
@@ -246,7 +246,7 @@ bukan mengubah mesin.</p>
 </ul>
 <p>Untuk semua itu, reviewer manusia tetap lapis terakhir. Checker menangkap pola yang mahal dan berulang, bukan menggantikan penilaian.</p>
 <h2 id="menulis-aturan-sendiri">Menulis aturan sendiri</h2>
-<p>Lihat <a href="/ironclad/extending/">Memperluas</a> — cara menambah aturan ke domain yang ada, atau
+<p>Lihat <a href="/ironclad-next/extending/">Memperluas</a> — cara menambah aturan ke domain yang ada, atau
 membuat domain baru beserta aturannya.</p>
 <p>Sebelum menulis aturan, ukur dulu: jalankan pada repo nyata dan hitung apa yang
 akan ia laporkan. Tiga aturan yang diusulkan untuk proyek ini gugur setelah
@@ -261,8 +261,8 @@ examples/bad.prisma          1 temuan
 </code></pre></div>
 <p>Angka-angka ini ikut diuji di CI repo ini lewat <code>.github/workflows/engineering-standards.yml</code>, jadi kalau checker-nya rusak, CI yang memberi tahu lebih dulu — bukan penggunanya.</p>
         <nav class="pager" aria-label="Halaman berikutnya">
-          <a class="prev" href="/ironclad/rules/"><span>Sebelumnya</span><b>Aturan</b></a>
-<a class="next" href="/ironclad/extending/"><span>Berikutnya</span><b>Memperluas</b></a>
+          <a class="prev" href="/ironclad-next/rules/"><span>Sebelumnya</span><b>Aturan</b></a>
+<a class="next" href="/ironclad-next/extending/"><span>Berikutnya</span><b>Memperluas</b></a>
         </nav>
         <footer class="docfoot">
           <span>Ironclad v0.11.0-0cff1a72</span>
@@ -295,7 +295,7 @@ examples/bad.prisma          1 temuan
   <p class="hint">↑ ↓ pilih · ↵ buka · ESC tutup</p>
 </div>
 
-<script src="/ironclad/assets/docs.js?v=0.11.0-0cff1a72" defer></script>
-<script src="/ironclad/assets/search-index.js?v=0.11.0-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/docs.js?v=0.11.0-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/search-index.js?v=0.11.0-0cff1a72" defer></script>
 </body>
 </html>

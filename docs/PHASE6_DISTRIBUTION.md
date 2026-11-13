@@ -19,7 +19,7 @@ Itu **salah**. Mirror live menyajikan `SKILL.md` versi lama, dan `pkg/` tidak
 memuat `ironclad_core/` sama sekali:
 
 ```
-$ curl -o /dev/null -w '%{http_code}' https://wilsench.my.id/ironclad/pkg/ironclad_core/engine.py
+$ curl -o /dev/null -w '%{http_code}' https://wilsench.my.id/ironclad-next/pkg/ironclad_core/engine.py
 404
 ```
 

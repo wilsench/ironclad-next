@@ -58,7 +58,7 @@ def _load_package():
     except ImportError as exc:
         print(f"ironclad: the checker engine is missing ({exc}).", file=sys.stderr)
         print("The install is incomplete — re-run the installer:", file=sys.stderr)
-        print("  curl -fsSL https://wilsench.my.id/ironclad/install.sh | bash",
+        print("  curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | bash",
               file=sys.stderr)
         return None
     return engine_main

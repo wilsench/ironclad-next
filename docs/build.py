@@ -5,8 +5,8 @@
 
 Reads docs/pages/<lang>/*.md (frontmatter + markdown), writes site/:
 
-    site/            Indonesian  → /ironclad/
-    site/en/         English     → /ironclad/en/
+    site/            Indonesian  → /ironclad-next/
+    site/en/         English     → /ironclad-next/en/
 
 Each language gets its own sidebar, TOC, search index and pager, so a reader
 never falls into the other language by accident. A switcher in the sidebar and
@@ -50,6 +50,11 @@ def _read_version() -> str:
 
 VERSION = _read_version()
 DEFAULT_LANG = "id"
+# This site is served under /ironclad-next/, not /ironclad/. The latter belongs
+# to the published 0.10.2 docs of the original repository and must not be
+# overwritten: a release candidate's documentation taking over the stable URL is
+# not a deploy, it is a quiet downgrade for everyone reading it.
+BASE = "/ironclad-next"
 LANGS = ["id", "en"]
 
 # every string the layout needs, per language
@@ -100,7 +105,7 @@ STRINGS = {
 
 
 def lang_prefix(lang: str) -> str:
-    return "/ironclad" if lang == DEFAULT_LANG else f"/ironclad/{lang}"
+    return BASE if lang == DEFAULT_LANG else f"{BASE}/{lang}"
 
 
 def asset_ver() -> str:
@@ -246,7 +251,7 @@ LAYOUT = """<!doctype html>
 <link rel="alternate" hreflang="{html_lang}" href="https://wilsench.my.id{path}/">
 <link rel="alternate" hreflang="{alt_lang}" href="https://wilsench.my.id{alt_path}/">
 <meta name="color-scheme" content="light">
-<link rel="stylesheet" href="/ironclad/assets/docs.css?v={ver}">
+<link rel="stylesheet" href="{BASE}/assets/docs.css?v={ver}">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -325,8 +330,8 @@ LAYOUT = """<!doctype html>
   <p class="hint">{hint}</p>
 </div>
 
-<script src="/ironclad/assets/docs.js?v={ver}" defer></script>
-<script src="/ironclad/assets/{index_file}?v={ver}" defer></script>
+<script src="{BASE}/assets/docs.js?v={ver}" defer></script>
+<script src="{BASE}/assets/{index_file}?v={ver}" defer></script>
 </body>
 </html>
 """
@@ -377,7 +382,7 @@ def build_lang(lang, pages_all):
             skip=t["skip"], search=t["search"], nav_aria=t["nav_aria"], lang_label=t["lang_label"],
             on_this_page=t["on_this_page"], burger=t["burger"], search_mini=t["search_mini"],
             pager_aria=t["pager_aria"], search_placeholder=t["search_placeholder"], hint=t["hint"],
-            prefix=prefix, home_id="/ironclad", home_en="/ironclad/en",
+            prefix=prefix, home_id=BASE, home_en=f"{BASE}/en", BASE=BASE,
             on_id=' class="on" aria-current="true"' if lang == "id" else "",
             on_en=' class="on" aria-current="true"' if lang == "en" else "",
             alt_label="EN" if lang == "id" else "ID",
@@ -449,12 +454,12 @@ def main():
         for p in built:
             print(f"  {lang_prefix(lang)}/{p['slug']}/  {p['title']}")
 
-    # /ironclad/ (default language) serves its first page directly; no redirect,
+    # BASE (default language) serves its first page directly; no redirect,
     # because the first page IS the landing. Canonical points at the stable URL.
     first = OUT / pages_all[DEFAULT_LANG][0]["slug"] / "index.html"
     (OUT / "index.html").write_text(first.read_text())
 
-    # /ironclad/en/ needs the same treatment
+    # BASE/en/ needs the same treatment
     if pages_all["en"]:
         first_en = OUT / "en" / pages_all["en"][0]["slug"] / "index.html"
         (OUT / "en" / "index.html").write_text(first_en.read_text())

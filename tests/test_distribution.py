@@ -257,6 +257,39 @@ def test_docs_claims_about_presets_are_true() -> None:
             ok(f"{lang} rules page says sixteen", "sixteen" in text.lower() or "enam belas" in text.lower())
 
 
+def test_release_never_mounts_over_the_stable_url() -> None:
+    """The published 0.10.2 docs live at /ironclad/.
+
+    Overwriting them with an unreleased 0.11.0 is a silent downgrade for
+    everyone already reading that URL — it happened once, in this session, and
+    the only reason it was recoverable is a backup taken beforehand.
+    """
+    print("\npaths are separate")
+    mirror = (ROOT / "scripts" / "sync-mirror.sh").read_text()
+    ok("mirror refuses to write into /ironclad/pkg",
+       "refusing to write into" in mirror and "public/ironclad/pkg" in mirror)
+
+    build = (ROOT / "docs" / "build.py").read_text()
+    ok("docs build uses a BASE constant", 'BASE = "/ironclad-next"' in build)
+    ok("no hardcoded /ironclad/ href remains", '"/ironclad/' not in build.replace('"/ironclad-next"', ''))
+
+    check = (ROOT / "scripts" / "release-check.sh").read_text()
+    ok("guards the /ironclad-next/ mirror",
+       "wilsench.my.id/ironclad-next/pkg" in check,
+       "the guard would verify someone else's site")
+
+    # Every URL in the payload and pages must point at the new prefix, or a
+    # reader is sent to docs that describe a different version.
+    offenders = []
+    for f in list((ROOT / "docs" / "pages").rglob("*.md")) + [ROOT / "README.md"]:
+        for i, line in enumerate(f.read_text().splitlines(), 1):
+            # `ironclad` must not be followed by `-next` either: the negative
+            # lookahead for "/" alone flags the correct new URL as a violation.
+            for m in re.finditer(r"wilsench\.my\.id/ironclad(?!-next)(?!/)", line):
+                offenders.append(f"{f.relative_to(ROOT)}:{i}")
+    ok("no page links to the old docs path", not offenders, str(offenders[:4]))
+
+
 def test_page_titles_not_stale() -> None:
     print("\npage metadata")
     for lang in ("en", "id"):
@@ -277,6 +310,7 @@ if __name__ == "__main__":
     test_docs_match_engine()
     test_install_commands_point_at_the_released_repo()
     test_docs_claims_about_presets_are_true()
+    test_release_never_mounts_over_the_stable_url()
     test_page_titles_not_stale()
     print(f"\n{passed} passed, {failed} failed")
     sys.exit(1 if failed else 0)

@@ -15,7 +15,7 @@ npx github:wilsench/ironclad-next#v{{VERSION}}
 Or, if you would rather not use Node:
 
 ```bash
-curl -fsSL https://wilsench.my.id/ironclad/install.sh | bash
+curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | bash
 ```
 
 Both run the same installer. No questions, no menu, no second step.

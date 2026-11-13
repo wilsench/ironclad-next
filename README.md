@@ -29,7 +29,7 @@ npx github:wilsench/ironclad-next#v0.11.0
 Same installer without Node:
 
 ```bash
-curl -fsSL https://wilsench.my.id/ironclad/install.sh | bash
+curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | bash
 ```
 
 No questions, no second step. It puts the skill where your agent looks, adds an
@@ -59,7 +59,7 @@ and to run the checker. Without `python3` the installer exits 3 and tells you ho
 install it, instead of claiming success with nothing written. `--no-agent-files`
 installs the skill alone.
 
-**Targets:** `agents` (Codex, Cursor, opencode, Antigravity — default), `claude`, `hermes`, `gemini`, `opencode`, or `--all`. Docs: <https://wilsench.my.id/ironclad/>
+**Targets:** `agents` (Codex, Cursor, opencode, Antigravity — default), `claude`, `hermes`, `gemini`, `opencode`, or `--all`. Docs: <https://wilsench.my.id/ironclad-next/>
 
 Format is [agentskills.io](https://agentskills.io/specification), so the same
 folder works in Hermes, Claude Code, Codex, Cursor, opencode, and Antigravity.
@@ -107,7 +107,7 @@ ironclad update --mute     # stop asking on this machine
 ```
 
 It never blocks, never runs in CI or a pipe, never checks more than once per 24h, and
-never changes the exit code of `ironclad check`. See [docs/update](https://wilsench.my.id/ironclad/update/).
+never changes the exit code of `ironclad check`. See [docs/update](https://wilsench.my.id/ironclad-next/update/).
 
 ## Why three layers
 

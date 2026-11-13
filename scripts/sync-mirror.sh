@@ -4,10 +4,17 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DEST="${1:-/home/wilsench/htdocs/wilsench.my.id/public/ironclad/pkg}"
+DEST="${1:-/home/wilsench/htdocs/wilsench.my.id/public/ironclad-next/pkg}"
 SKILL="$ROOT/skills/ironclad"
 OWNER="wilsench:wilsench"
 
+case "$DEST" in
+  */public/ironclad/pkg|*/public/ironclad/*)
+    echo "refusing to write into $DEST" >&2
+    echo "that path serves the published 0.10.2 docs of the original repository." >&2
+    echo "this release lives at /ironclad-next/." >&2
+    exit 1 ;;
+esac
 [ -d "$DEST" ] || { echo "no mirror dir: $DEST" >&2; exit 1; }
 
 # MANIFEST is the payload index. install.sh reads it when the script arrives on

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Ironclad — one rulebook for every AI coding agent.
 #
-#   curl -fsSL https://wilsench.my.id/ironclad/install.sh | bash
+#   curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | bash
 #
 # That is the whole install. No questions. It puts the skill where your agent
 # looks for it and adds an `ironclad` command to ~/.local/bin.
@@ -226,7 +226,7 @@ SELF_PAYLOAD="$SELF_DIR_TMP/skills/$SKILL_NAME"
 
 # ---- fetch ------------------------------------------------------------------
 PRIMARY="https://raw.githubusercontent.com/${REPO}/${REF}/skills/${SKILL_NAME}"
-MIRROR="${IRONCLAD_MIRROR:-https://wilsench.my.id/ironclad/pkg}"
+MIRROR="${IRONCLAD_MIRROR:-https://wilsench.my.id/ironclad-next/pkg}"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -429,11 +429,11 @@ elif [ "${AGENTS_WRITTEN:-0}" = "0" ]; then
   echo
   echo "If your agent is not in that list, run it once so it creates its config dir,"
   echo "then re-run the installer. Or tell the agent to read SKILL.md directly:"
-  echo "  https://wilsench.my.id/ironclad/no-commands/"
+  echo "  https://wilsench.my.id/ironclad-next/no-commands/"
 elif [ -z "$NO_AGENT_FILES" ]; then
   echo "Your agent now asks before writing schema, in every repo, with no command"
   echo "from you. If it does not, the agent is not reading its config file — see"
-  echo "https://wilsench.my.id/ironclad/no-commands/"
+  echo "https://wilsench.my.id/ironclad-next/no-commands/"
 else
   echo "Skill only — you passed --no-agent-files, so no agent config was touched."
   echo "The agent will not ask on its own until you run: ironclad attach --global"

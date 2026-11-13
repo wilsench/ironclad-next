@@ -15,7 +15,7 @@ npx github:wilsench/ironclad-next#v{{VERSION}}
 Atau, kalau lebih suka tanpa Node:
 
 ```bash
-curl -fsSL https://wilsench.my.id/ironclad/install.sh | bash
+curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | bash
 ```
 
 Keduanya menjalankan installer yang sama. Tidak ada pertanyaan, tidak ada menu, tidak

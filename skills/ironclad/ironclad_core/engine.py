@@ -275,5 +275,5 @@ def coverage_warning(result: Result, targets) -> list[str]:
         lines.append(f"  {ext}: {paths[0]}{more}")
     lines += ["", "Until support exists, enforce the same rules by hand or with your",
               "framework's own migrations review — see",
-              "https://wilsench.my.id/ironclad/troubleshooting/"]
+              "https://wilsench.my.id/ironclad-next/troubleshooting/"]
     return lines

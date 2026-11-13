@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CI & pre-commit — Ironclad</title>
 <meta name="description" content="Memasang checker sebagai gate yang tidak membuat semua PR merah — gate hanya file yang berubah.">
-<link rel="canonical" href="https://wilsench.my.id/ironclad/ci/">
-<link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad/ci/">
-<link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad/en/ci/">
+<link rel="canonical" href="https://wilsench.my.id/ironclad-next/ci/">
+<link rel="alternate" hreflang="id" href="https://wilsench.my.id/ironclad-next/ci/">
+<link rel="alternate" hreflang="en" href="https://wilsench.my.id/ironclad-next/en/ci/">
 <meta name="color-scheme" content="light">
-<link rel="stylesheet" href="/ironclad/assets/docs.css?v=0.11.0-0cff1a72">
+<link rel="stylesheet" href="/ironclad-next/assets/docs.css?v=0.11.0-0cff1a72">
 <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
@@ -19,7 +19,7 @@
 <div class="shell">
 
   <aside class="side" id="side">
-    <a class="brand" href="/ironclad/">
+    <a class="brand" href="/ironclad-next/">
       <span class="mark" aria-hidden="true">IC</span>
       <span>
         <b>Ironclad</b>
@@ -28,8 +28,8 @@
     </a>
 
     <div class="langsw" role="group" aria-label="Bahasa">
-      <a href="/ironclad/ci/" class="on" aria-current="true">ID</a>
-      <a href="/ironclad/en/ci/">EN</a>
+      <a href="/ironclad-next/ci/" class="on" aria-current="true">ID</a>
+      <a href="/ironclad-next/en/ci/">EN</a>
     </div>
 
     <button class="searchbtn" type="button" id="searchbtn">
@@ -38,30 +38,30 @@
 
     <nav class="nav" aria-label="Dokumentasi">
       <div class="navgroup"><div class="navlabel"><span>01</span>Mulai</div><ul>
-<li><a href="/ironclad/overview/">Apa ini, untuk siapa</a></li>
-<li><a href="/ironclad/kamus/">Kamus</a></li>
-<li><a href="/ironclad/install/">Pasang di agent</a></li>
-<li><a href="/ironclad/how-agents-use-it/">Cara agent memakainya</a></li>
-<li><a href="/ironclad/quickstart/">Quickstart</a></li>
-<li><a href="/ironclad/no-commands/">Cara pakai tanpa command</a></li>
-<li><a href="/ironclad/team/">Untuk tim</a></li>
-<li><a href="/ironclad/update/">Memperbarui</a></li>
+<li><a href="/ironclad-next/overview/">Apa ini, untuk siapa</a></li>
+<li><a href="/ironclad-next/kamus/">Kamus</a></li>
+<li><a href="/ironclad-next/install/">Pasang di agent</a></li>
+<li><a href="/ironclad-next/how-agents-use-it/">Cara agent memakainya</a></li>
+<li><a href="/ironclad-next/quickstart/">Quickstart</a></li>
+<li><a href="/ironclad-next/no-commands/">Cara pakai tanpa command</a></li>
+<li><a href="/ironclad-next/team/">Untuk tim</a></li>
+<li><a href="/ironclad-next/update/">Memperbarui</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>02</span>Konsep</div><ul>
-<li><a href="/ironclad/modes/">Mode — ask atau house</a></li>
-<li><a href="/ironclad/three-layers/">Tiga lapis</a></li>
-<li><a href="/ironclad/presets/">Preset — seberapa keras</a></li>
+<li><a href="/ironclad-next/modes/">Mode — ask atau house</a></li>
+<li><a href="/ironclad-next/three-layers/">Tiga lapis</a></li>
+<li><a href="/ironclad-next/presets/">Preset — seberapa keras</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>03</span>Referensi</div><ul>
-<li><a href="/ironclad/rules/">Aturan</a></li>
-<li><a href="/ironclad/checker/">Checker</a></li>
-<li><a href="/ironclad/extending/">Memperluas</a></li>
-<li><a href="/ironclad/frameworks/">Laravel, Prisma, dan backend lain</a></li>
+<li><a href="/ironclad-next/rules/">Aturan</a></li>
+<li><a href="/ironclad-next/checker/">Checker</a></li>
+<li><a href="/ironclad-next/extending/">Memperluas</a></li>
+<li><a href="/ironclad-next/frameworks/">Laravel, Prisma, dan backend lain</a></li>
 </ul></div>
 <div class="navgroup"><div class="navlabel"><span>04</span>Operasional</div><ul>
-<li><a href="/ironclad/ci/" class="active" aria-current="page">CI & pre-commit</a></li>
-<li><a href="/ironclad/troubleshooting/">Troubleshooting</a></li>
-<li><a href="/ironclad/faq/">FAQ</a></li>
+<li><a href="/ironclad-next/ci/" class="active" aria-current="page">CI & pre-commit</a></li>
+<li><a href="/ironclad-next/troubleshooting/">Troubleshooting</a></li>
+<li><a href="/ironclad-next/faq/">FAQ</a></li>
 </ul></div>
     </nav>
 
@@ -79,7 +79,7 @@
         <span></span><span></span>
       </button>
       <span class="crumb">Operasional / <b>CI & pre-commit</b></span>
-      <a class="langsw-mini" href="/ironclad/en/ci/" aria-label="Bahasa">EN</a>
+      <a class="langsw-mini" href="/ironclad-next/en/ci/" aria-label="Bahasa">EN</a>
       <button class="searchmini" type="button" id="searchmini" aria-label="Cari">/<span>Cari</span></button>
     </header>
 
@@ -177,8 +177,8 @@ jobs:
 </code></pre></div>
 <p>Belum ada konverter SARIF bawaan — kalau kamu butuh, itu pekerjaan setengah hari dan masuk akal untuk organisasi besar.</p>
         <nav class="pager" aria-label="Halaman berikutnya">
-          <a class="prev" href="/ironclad/frameworks/"><span>Sebelumnya</span><b>Laravel, Prisma, dan backend lain</b></a>
-<a class="next" href="/ironclad/troubleshooting/"><span>Berikutnya</span><b>Troubleshooting</b></a>
+          <a class="prev" href="/ironclad-next/frameworks/"><span>Sebelumnya</span><b>Laravel, Prisma, dan backend lain</b></a>
+<a class="next" href="/ironclad-next/troubleshooting/"><span>Berikutnya</span><b>Troubleshooting</b></a>
         </nav>
         <footer class="docfoot">
           <span>Ironclad v0.11.0-0cff1a72</span>
@@ -209,7 +209,7 @@ jobs:
   <p class="hint">↑ ↓ pilih · ↵ buka · ESC tutup</p>
 </div>
 
-<script src="/ironclad/assets/docs.js?v=0.11.0-0cff1a72" defer></script>
-<script src="/ironclad/assets/search-index.js?v=0.11.0-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/docs.js?v=0.11.0-0cff1a72" defer></script>
+<script src="/ironclad-next/assets/search-index.js?v=0.11.0-0cff1a72" defer></script>
 </body>
 </html>

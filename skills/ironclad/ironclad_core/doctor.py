@@ -168,7 +168,7 @@ def _finish(problems: list[str], code: int, failures: int = 0) -> int:
         print(f"  - {p}")
     if failures:
         print("\nThe install itself is broken. Re-run it:")
-        print("  curl -fsSL https://wilsench.my.id/ironclad/install.sh | bash")
+        print("  curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | bash")
     else:
         print("\nThe install is fine; this repo needs attention.")
         print("  `ironclad check .` shows the findings themselves.")

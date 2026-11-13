@@ -82,7 +82,7 @@ Node, the `install.sh` mirror on `wilsench.my.id` runs the same code.
 The installer is about 190 lines of bash and you can read it first:
 
 ```bash
-curl -fsSL https://wilsench.my.id/ironclad/install.sh | less
+curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | less
 ```
 
 What it does: downloads 11 text files, copies them into one skill directory, and —

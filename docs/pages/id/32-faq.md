@@ -68,7 +68,7 @@ Untuk agent lain, pakai `npx github:wilsench/ironclad-next#v{{VERSION}}` — itu
 Installer-nya 180 baris bash dan bisa kamu baca dulu:
 
 ```bash
-curl -fsSL https://wilsench.my.id/ironclad/install.sh | less
+curl -fsSL https://wilsench.my.id/ironclad-next/install.sh | less
 ```
 
 Yang dilakukannya: mengunduh 10 berkas teks, menyalinnya ke satu folder skill, dan — hanya kalau kamu memberi `--project` — menulis `.agent/` di repo yang kamu sebut. Tidak ada `sudo`, tidak mengubah shell profile, tidak menyentuh skill lain.
