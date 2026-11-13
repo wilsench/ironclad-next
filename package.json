@@ -2,7 +2,7 @@
   "name": "ironclad-db-standards",
   "version": "0.11.1",
   "private": true,
-  "description": "Ironclad \u2014 one way to store status per project. Installs a standing instruction into every AI coding agent's config.",
+  "description": "Ironclad - project consistency rules for AI coding agents: database, API, security and architecture. Installs a standing instruction plus a checker.",
   "license": "MIT",
   "bin": {
     "ironclad": "cli/index.mjs"
