@@ -339,6 +339,23 @@ def test_banner_points_at_the_public_release() -> None:
     ok("banner keeps a backup", "BACKUP_DIR" in body, "no rollback")
 
 
+def test_old_skill_is_refused_not_used() -> None:
+    """An old skill must fail loudly, not install a checker without the engine.
+
+    Hit for real: `IRONCLAD_HOME` was unset once, the fallback skill was a 0.9.0
+    install whose check_schema.py is a 548-line monolith with no ironclad_core,
+    and `init` silently wrote it into the target repo. The repo then reported
+    DB-02/DB-04 findings the released engine had already stopped making.
+    """
+    print("\nold skill guard")
+    body = (ROOT / "skills" / "ironclad" / "bin" / "ironclad").read_text()
+    ok("the command checks for the engine",
+       'ironclad_core" ]' in body or "ironclad_core\" ]" in body,
+       "an old skill would be used as if it were current")
+    ok("the guard explains the problem",
+       "old skill" in body, "a bare failure would not tell anyone what to do")
+
+
 def test_page_titles_not_stale() -> None:
     print("\npage metadata")
     for lang in ("en", "id"):
@@ -363,5 +380,6 @@ if __name__ == "__main__":
     test_page_titles_not_stale()
     test_adopted_repo_does_not_check_the_payload()
     test_banner_points_at_the_public_release()
+    test_old_skill_is_refused_not_used()
     print(f"\n{passed} passed, {failed} failed")
     sys.exit(1 if failed else 0)

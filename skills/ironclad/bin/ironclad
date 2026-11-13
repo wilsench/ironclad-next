@@ -34,6 +34,14 @@ die() { echo "ironclad: $*" >&2; exit 1; }
 [ -f "$CHECKER" ] || die "skill not found at $IRONCLAD_HOME (re-run the installer)"
 command -v python3 >/dev/null 2>&1 || die "python3 is required to run the checker"
 
+# A payload without ironclad_core/ is a pre-0.9 skill: its check_schema.py is a
+# 500-line monolith and knows nothing about the API, security or architecture
+# domains. `init` from such a skill writes that old checker into a repo that
+# believes it got the current rules — the repo then reports findings the released
+# engine no longer makes, and nobody can tell why. Say so instead of guessing.
+[ -d "$IRONCLAD_HOME/ironclad_core" ] || die \
+  "$IRONCLAD_HOME is an old skill (no ironclad_core/); it would install a checker without the domain engine. Re-run the installer, or set IRONCLAD_HOME to a current skill."
+
 find_root() {
   local d="$PWD"
   while [ "$d" != "/" ]; do
